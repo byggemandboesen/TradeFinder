@@ -64,6 +64,26 @@ class Logger:
         return parsed_alert
 
 
+    # Parse a trendline from Tradingview coordinates
+    # TODO Needs work - See main.py
+    # def parse_trendline(self, point1, point2, timeframe):
+        
+    #     # Calculate change in price pr. bar (pr. timeframe)
+    #     slope = (point2[0] - point1[0]) / (point2[1] - point1[1])
+    #     # Get change in price pr minute
+    #     if "m" in timeframe:
+    #         slope_min = slope / timeframe
+    #     elif "h" in timeframe:
+    #         slope_min = slope / (timeframe * 60)
+    #     elif "d" in timeframe:
+    #         slope_min = slope / (timeframe * 60 * 24)
+    #     else:
+    #         return "Check the given timeframe. Should be (m=min, h=hour, d=day)"
+
+    #     parsed_trendline = f"{slope_min}X"
+
+    #     print("Parsing trendline")
+
     # Returns all coins with an alert
     def get_symbols(self):
         with open(self.log_path) as log_file:

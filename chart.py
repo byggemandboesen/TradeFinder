@@ -7,41 +7,61 @@ class Charter:
         self.CANDLES = candles
         
         self.XLABEL = candles["Open time"][::32]
-        self.TITLE_SIZE = 18
-        self.LABEL_SIZE = 14
-        self.TICK_SIZE = 8
+        self.TITLE_SIZE = 22
+        self.LABEL_SIZE = 16
+        self.TICK_SIZE = 12
     
 
     # Plot, save and return path to chart
     def create_chart(self):
-        plt.figure(figsize=(12,6))
-        plt.style.use('dark_background')
-
-        # Plot bars
-        width=1
-        width2=0.15
-        pricesup=self.CANDLES[self.CANDLES.close>=self.CANDLES.open]
-        pricesdown=self.CANDLES[self.CANDLES.close<self.CANDLES.open]
-
-        plt.bar(pricesup.index,pricesup.Close-pricesup.Open,width,bottom=pricesup.Open,color='g')
-        plt.bar(pricesup.index,pricesup.High-pricesup.Close,width2,bottom=pricesup.Close,color='g')
-        plt.bar(pricesup.index,pricesup.Low-pricesup.Open,width2,bottom=pricesup.Open,color='g')
-
-        plt.bar(pricesdown.index,pricesdown.Close-pricesdown.Open,width,bottom=pricesdown.Open,color='r')
-        plt.bar(pricesdown.index,pricesdown.High-pricesdown.Open,width2,bottom=pricesdown.Open,color='r')
-        plt.bar(pricesdown.index,pricesdown.Low-pricesdown.Close,width2, bottom=pricesdown.Close,color='r')
         
-        # Plot title, ticks and etc
-        plt.title(f"24H chart for {self.SYMBOL} - 5m candles", fontsize = self.TITLE_SIZE)
-        plt.ylabel(r"Price evaluation", fontsize = self.LABEL_SIZE)
-        plt.xlabel("Time", fontsize = self.LABEL_SIZE)
-        plt.xlim(0, 288)
-        plt.xticks([32*i for i in range(9)], [label.split(" ")[1] for label in self.XLABEL.astype(str)], rotation = 45, ha = 'right', fontsize = self.TICK_SIZE)
-        plt.yticks(fontsize = self.TICK_SIZE)
-        plt.grid(alpha = 0.25)
-        plt.tight_layout()
+        fig = plt.figure(figsize=(16,10))
+        grid = fig.add_gridspec(2,1, height_ratios = (3,1))
+        plt.style.use('dark_background')
+        fig.suptitle(f"24H chart for {self.SYMBOL} - 5m candles", fontsize = self.TITLE_SIZE)
 
+        chart_ax = fig.add_subplot(grid[0,0])
+        vol_ax = fig.add_subplot(grid[1,0])
+        # TODO Share x-axis with volume chart
+
+        pricesup=self.CANDLES[self.CANDLES.Close>=self.CANDLES.Open]
+        pricesdown=self.CANDLES[self.CANDLES.Close<self.CANDLES.Open]
+
+        self.plt_chart(chart_ax, pricesup, pricesdown)
+        self.plt_vol(vol_ax, pricesup, pricesdown)
+
+        chart_ax.get_shared_x_axes().join(chart_ax, vol_ax)
+        chart_ax.set_xticklabels([])
+       
+        plt.tight_layout()
         path = f'./{self.SYMBOL}.png'
-        plt.savefig(path, dpi = 250)
+        plt.savefig(path, dpi = 200)
         plt.close()
         return path
+
+    def plt_chart(self, ax, pricesup, pricesdown):
+        width=1
+        width2=0.15
+        ax.bar(pricesup.index,pricesup.Close-pricesup.Open,width,bottom=pricesup.Open,color='g')
+        ax.bar(pricesup.index,pricesup.High-pricesup.Close,width2,bottom=pricesup.Close,color='g')
+        ax.bar(pricesup.index,pricesup.Low-pricesup.Open,width2,bottom=pricesup.Open,color='g')
+
+        ax.bar(pricesdown.index,pricesdown.Close-pricesdown.Open,width,bottom=pricesdown.Open,color='r')
+        ax.bar(pricesdown.index,pricesdown.High-pricesdown.Open,width2,bottom=pricesdown.Open,color='r')
+        ax.bar(pricesdown.index,pricesdown.Low-pricesdown.Close,width2, bottom=pricesdown.Close,color='r')
+        
+        # Plot ticks and etc
+        ax.set(xlim = [0, 288])
+        ax.set_ylabel("Price evaluation", fontsize = self.LABEL_SIZE)
+        ax.grid(alpha = 0.25)
+    
+    def plt_vol(self, ax, pricesup, pricesdown):
+        ax.bar(pricesup.index, pricesup.Volume, color='g')
+        ax.bar(pricesdown.index, pricesdown.Volume, color='r')
+
+        ax.set(xlim = [0, 288])
+        ax.set_xticklabels(labels = [label.split(" ")[1] for label in self.XLABEL.astype(str)], fontsize = self.TICK_SIZE)
+        ax.tick_params(axis = "y", labelsize = self.TICK_SIZE)
+        ax.set_ylabel("Volume", fontsize = self.LABEL_SIZE)
+        ax.set_xlabel("Time", fontsize = self.LABEL_SIZE)
+        ax.grid(alpha = 0.25)
