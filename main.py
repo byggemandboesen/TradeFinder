@@ -1,4 +1,5 @@
 # Discord imports
+# TODO Migrate to pycord
 import discord
 from discord.ext import commands, tasks
 
@@ -27,8 +28,7 @@ bot = commands.Bot(command_prefix = ".")
 @bot.event
 async def on_ready():
     print("Bot is ready to scrape coins!!")
-    if not scrape_market().is_running():
-        scrape_market.start()
+    scrape_market.start()
 
 @tasks.loop(seconds = 300)
 async def scrape_market():

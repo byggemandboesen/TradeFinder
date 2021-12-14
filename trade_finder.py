@@ -3,7 +3,7 @@ import pandas as pd
 class TradeFinder:
     def __init__(self, DataStreamer, TechnicalAnalyzer):
         self.DataStreamer = DataStreamer
-        self.all_coins = [coin for coin in self.DataStreamer.get_symbols() if "USD" in coin] # ["BTCUSDT", "ETHUSDT", "ADAUSDT", "BNBUSDT", "SOLUSDT"]
+        self.all_coins = [coin for coin in self.DataStreamer.get_symbols() if "USD" in coin and not "USDC" in coin] # ["BTCUSDT", "ETHUSDT", "ADAUSDT", "BNBUSDT", "SOLUSDT"]
         self.TechnicalAnalyzer = TechnicalAnalyzer
         self.VOL_THREASHOLD = 3
         
