@@ -12,6 +12,8 @@ TechnicalAnalyzer = TA()
 from chart import Charter
 from stream import Streamer
 DataStreamer = Streamer()
+from trade_finder import TradeFinder
+TradeScraper = TradeFinder(DataStreamer, TechnicalAnalyzer)
 from alert_logger import Logger
 AlertLogger = Logger()
 
@@ -25,18 +27,26 @@ bot = commands.Bot(command_prefix = ".")
 @bot.event
 async def on_ready():
     print("Bot is ready to scrape coins!!")
-    scrape_market.start()
+    if not scrape_market().is_running():
+        scrape_market.start()
 
-@tasks.loop(seconds = 10)
+@tasks.loop(seconds = 300)
 async def scrape_market():
+    print(f"{datetime.utcnow()} - Scraping market...")
+    # Check for high volume moves to the upside
+    # Retuns data with coins , % up from open price, and the volume
+    movers = TradeScraper.check_vol()
+
+    # Check if any alerts have been triggered
     symbols = list(AlertLogger.get_symbols())
     df = DataStreamer.getKlines(symbols)
-    print(f"{datetime.utcnow()} - Scraping market...")
+    # alerts_triggered = TradeScraper.check_alerts(df)
+    print(f"{datetime.utcnow()} - Done scraping!")
 
 @scrape_market.before_loop
 async def set_status():
     await bot.change_presence(activity = discord.Activity(type = discord.ActivityType.watching, name = "candlesticks"))
-    await bot.wait_until_ready() 
+    await bot.wait_until_ready()
 
 
 #--------------------------------------------- Commands ----------------------------------------------#
@@ -53,7 +63,7 @@ async def alert(ctx, symbol='', type='', price=''):
         await ctx.send("Please remember to specify symbol, type(up/down) and price")
     else:
         AlertLogger.add_alert(uid, symbol, type, price)
-        await ctx.send(f"<@{uid}> set an alert for {symbol}!")
+        await ctx.send(f"Set an alert for {symbol}!")
 
 
 # Remove alert

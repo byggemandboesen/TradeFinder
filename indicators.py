@@ -1,4 +1,6 @@
 from ta import momentum, trend
+import numpy as np
+import pandas as pd
 
 class TA:
     def __init__(self):
@@ -6,6 +8,7 @@ class TA:
             "RSI": self.rsi,
             "EMA": self.ema,
             "SMA": self.sma,
+            "VMA": self.vma,
             "BMS": self.bms
         }
 
@@ -23,6 +26,10 @@ class TA:
     def sma(self, candles, window):
         sma = trend.SMAIndicator(candles["Close"], window)
         return f"SMA = {round(sma.sma_indicator().iloc[-1], 2)}"
+
+    def vma(self, candles, window):
+        vma = candles["Volume"].rolling(window).mean()
+        return round(vma.iloc[-1], 2)
 
     def bms(self, candles, window):
         sma20 = self.sma(candles, 20)
