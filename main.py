@@ -44,22 +44,27 @@ async def on_ready():
 async def scrape_market():
     update_channel = bot.get_channel(bot_updates_channel)
     # await update_channel.send(f"{datetime.utcnow()} - Busy scraping market!")
-    
+    print(f"{datetime.utcnow()} - Busy scraping market!")
+
     # Check for high volume moves to the upside
     movers = TradeScraper.check_vol()
     if movers is None:
         print("No high volume breakouts!")
     else:
         channel = bot.get_channel(vol_breakout_alerts)
-        await channel.send(f"Caught high volume breakouts on3m candles!\n{movers.to_string()}")
+        # await channel.send(f"Caught high volume breakouts on3m candles!\n{movers.to_string()}")
 
 
     # Check if any alerts have been triggered
     symbols = list(AlertLogger.get_symbols())
-    df = DataStreamer.getKlines(symbols)
-    # alerts_triggered = TradeScraper.check_alerts(df)
+    triggered = TradeScraper.check_alerts(symbols)
+
+    # Remove alert
+    # AlertLogger.rm_alert("[alerts]")
+
     # update_channel = bot.get_channel(bot_updates_channel)
     # await update_channel.send(f"{datetime.utcnow()} - Done scraping!")
+    print(f"{datetime.utcnow()} - Done scraping!")
 
 @scrape_market.before_loop
 async def set_status():
