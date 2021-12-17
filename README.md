@@ -18,7 +18,7 @@ pip install -U git+https://github.com/Pycord-Development/pycord
 ```
 
 **NOTE WHEN ADDING BOT TO SERVER** - Remember to give the bot permission to use commands and to be a bot when adding the bot to your server! <br>
-https://discord.com/developers/applications/<you-application-id>/oauth2/url-generator <br>
+https://discord.com/developers/applications/you-application-id/oauth2/url-generator <br>
 And remember to add the bot token as well, in the bottom of the main file...
 
 ## Customizing the bot
