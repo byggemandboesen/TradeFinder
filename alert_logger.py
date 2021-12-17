@@ -8,7 +8,7 @@ class Logger:
     # Add alert
     def add_alert(self, uid, symbol, type, price):
         symbol = symbol.upper()
-        parsed_alert = self.parse_alert(uid, type, price)
+        parsed_alert = self.parse_alert(symbol, uid, type, price)
 
         # Check if log file already exists
         if os.path.isfile(self.log_path):
@@ -20,7 +20,6 @@ class Logger:
                     file[symbol].append(parsed_alert)
                 except:
                     file.update({symbol: [parsed_alert]})
-                    print("Symbol pair not added yet")
                 
                 log_file.seek(0)
                 json.dump(file, log_file, indent = 4)
@@ -34,7 +33,7 @@ class Logger:
 
     # Remove alert
     def rm_alert(self, uid, symbol, type, price):
-        alert_to_remove = self.parse_alert(uid, type, price)
+        alert_to_remove = self.parse_alert(symbol, uid, type, price)
         
         with open(self.log_path, "r+") as log_file:
             file = json.load(log_file)
@@ -55,8 +54,9 @@ class Logger:
             
 
     # Parse alert
-    def parse_alert(self, uid, type, price):
+    def parse_alert(self, symbol, uid, type, price):
         parsed_alert = {
+            "symbol": symbol,
             "userid": uid,
             "type": type,
             "price": price
@@ -88,6 +88,6 @@ class Logger:
     def get_symbols(self):
         with open(self.log_path) as log_file:
             file = json.load(log_file)
-            symbols = file.keys()
+            symbols = [*file]
             log_file.close()
         return symbols
