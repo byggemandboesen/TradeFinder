@@ -1,4 +1,5 @@
 import json
+from numpy import log
 import pandas as pd
 
 class TradeFinder:
@@ -32,21 +33,21 @@ class TradeFinder:
         df = df.set_index("Coins", inplace = False) if len(df.index) > 0 else None
         return df
     
-    def check_alerts(self, symbols):
+    def check_price_alerts(self, symbols):
         triggered = []
         # Open the alerts file for all symbols
         with open("alerts.json", "r") as log_file:
             file = json.load(log_file)
 
             for symbol in symbols:
-                # Get the price of symbol pair
-                candle = self.DataStreamer.getKlines(symbol, 2)
-                price = candle["Close"].iloc[-1]
-                
                 # Get the alerts for the symbol
                 alerts = file[symbol]
                 up = [alert for alert in alerts if alert["type"] == "up"]
                 down = [alert for alert in alerts if alert["type"] == "down"]
+
+                # Get the price of symbol pair
+                candle = self.DataStreamer.getKlines(symbol, 2)
+                price = candle["Close"].iloc[-1]
 
                 # Check which alerts are triggered
                 triggered_up = [alert for alert in up if float(alert["price"]) < price]
@@ -56,4 +57,25 @@ class TradeFinder:
             
             log_file.close()
 
+        return triggered
+    
+    # Check for volume breakout alerts on their corresponding timeframe
+    # TODO Maybe merge function with function above
+    def check_volume_alerts(self, symbols):
+        triggered = []
+
+        with open("alerts.json", "r") as log_file:
+            file = json.load(log_file)
+
+            for symbol in symbols:
+                alerts = file[symbol]
+                # Get volume alerts
+                vol_alerts = [alert for alert in alerts if alert["type"] == "up"]
+
+                for alert in vol_alerts:
+                    candles = self.DataStreamer.getKlines(symbol, 20, alert["timeframe"])
+                    vma = self.TechnicalAnalyzer.vma(candles, 20)
+                    triggered = triggered + alert if candles["Volume"] > self.VOL_THREASHOLD * vma else triggered
+            
+            log_file.close()
         return triggered

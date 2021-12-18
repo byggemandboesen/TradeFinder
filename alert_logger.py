@@ -54,12 +54,13 @@ class Logger:
             
 
     # Parse alert
-    def parse_alert(self, symbol, uid, type, price):
+    def parse_alert(self, symbol, uid, type, price, timeframe):
         parsed_alert = {
             "symbol": symbol,
             "userid": uid,
             "type": type,
-            "price": price
+            "price": price,
+            "timeframe": timeframe
         }
         return parsed_alert
 

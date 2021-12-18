@@ -55,12 +55,13 @@ async def scrape_market():
 
     # Check if any alerts have been triggered
     symbols = AlertLogger.get_symbols()
-    triggered = TradeScraper.check_alerts(symbols)
-    print(triggered)
+    price_triggers = TradeScraper.check_price_alerts(symbols)
+    vol_triggers = TradeScraper.check_volume_alerts(symbols)
+    print(vol_triggers)
 
     # Alert users that created their alerts
     alert_channel = bot.get_channel(alerts_channel)
-    for alert in triggered:
+    for alert in price_triggers:
         user = alert["userid"]
         symbol = alert["symbol"]
         price = alert["price"]
@@ -68,7 +69,7 @@ async def scrape_market():
         await alert_channel.send(f"<@{user}> Alert triggered for {symbol} at price {price}. Type: \"{type_alert}\"")
 
     # Remove alerts after being triggered
-    [AlertLogger.rm_alert(alert["userid"], alert["symbol"], alert["type"], alert["price"]) for alert in triggered]
+    [AlertLogger.rm_alert(alert["userid"], alert["symbol"], alert["type"], alert["price"]) for alert in price_triggers]
 
     # update_channel = bot.get_channel(bot_updates_channel)
     # await update_channel.send(f"{datetime.utcnow()} - Done scraping!")
@@ -84,22 +85,35 @@ async def set_status():
 
 
 # Add an alert for a symbol pair when certain price is crossed
-@bot.slash_command(guild_ids = [guild_id], name = "alert", description = "Add an alert for a symbol pair")
-async def alert(ctx, symbol, type, price):
+@bot.slash_command(guild_ids = [guild_id], name = "alert", description = "Add an alert for a price movement or volume breakout on certain timeframe")
+async def alert(ctx, symbol, type, price = 0, timeframe = '1h'):
     symbol = symbol.upper()
-    # Get user ID
-    uid = ctx.author.id
-    AlertLogger.add_alert(uid, symbol, type, price)
-    await ctx.respond(f"Set an alert for {symbol}!")
+    if not DataStreamer.check_symbol(symbol):
+        await ctx.respond("That sucks.... I looked everywhere on Binance, but I can't find this symbol pair:cry:")
+    elif type not in ("up", "down", "volume"):
+        await ctx.respond("Please add a valid type for this alert: up, down, volume")
+    else:
+        # Get user ID
+        uid = ctx.author.id
+        AlertLogger.add_alert(uid, symbol, type, price)
+        await ctx.respond(f"Set an alert for {symbol}!")
 
 
 # Remove alert
 @bot.slash_command(guild_ids = [guild_id], name = "rmalert", description = "Remove an alert")
-async def rmalert(ctx, symbol, type, price):
+async def rmalert(ctx, symbol, type, price = 0, timeframe = '1h'):
     symbol = symbol.upper()
-    uid = ctx.author.id
-    AlertLogger.rm_alert(uid, symbol, type, price)
-    await ctx.respond(f"Alert for {symbol} deleted!")
+    if not DataStreamer.check_symbol(symbol):
+        await ctx.respond("That sucks.... I looked everywhere on Binance, but I can't find this symbol pair:cry:")
+    elif type not in ("up", "down", "volume"):
+        await ctx.respond("Please add a valid type for this alert: up, down, volume")
+    else:
+        uid = ctx.author.id
+        try:
+            AlertLogger.rm_alert(uid, symbol, type, price)
+            await ctx.respond(f"Alert for {symbol} deleted!")
+        except:
+            await ctx.respond("An error occured... Are you sure the alert exists?")
 
 
 # Chart symbol pair last 24H
