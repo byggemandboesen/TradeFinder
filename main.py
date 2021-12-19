@@ -44,7 +44,6 @@ async def scrape_market():
     print(f"{datetime.utcnow()} - Busy scraping market!")
 
     # Do market scrape if channel is supplied in parameters.json
-    '''
     if vol_breakout_alerts is not None:
         # Check for high volume moves to the upside
         movers = TradeScraper.check_vol()
@@ -53,7 +52,6 @@ async def scrape_market():
         else:
             channel = bot.get_channel(vol_breakout_alerts)
             await channel.send(f"Caught high volume breakouts!\n{movers.to_string()}")
-    '''
 
     # Check if any alerts have been triggered
     symbols = AlertLogger.get_symbols()
