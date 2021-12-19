@@ -44,6 +44,7 @@ async def scrape_market():
     print(f"{datetime.utcnow()} - Busy scraping market!")
 
     # Do market scrape if channel is supplied in parameters.json
+    '''
     if vol_breakout_alerts is not None:
         # Check for high volume moves to the upside
         movers = TradeScraper.check_vol()
@@ -52,24 +53,28 @@ async def scrape_market():
         else:
             channel = bot.get_channel(vol_breakout_alerts)
             await channel.send(f"Caught high volume breakouts!\n{movers.to_string()}")
+    '''
 
     # Check if any alerts have been triggered
     symbols = AlertLogger.get_symbols()
     price_triggers = TradeScraper.check_price_alerts(symbols)
     vol_triggers = TradeScraper.check_volume_alerts(symbols)
-    print(vol_triggers)
 
     # Alert users that created their alerts
     alert_channel = bot.get_channel(alerts_channel)
-    for alert in price_triggers:
+    for alert in (price_triggers + vol_triggers):
         user = alert["userid"]
         symbol = alert["symbol"]
         price = alert["price"]
         type_alert = alert["type"]
-        await alert_channel.send(f"<@{user}> Alert triggered for {symbol} at price {price}. Type: \"{type_alert}\"")
+        timeframe = alert["timeframe"]
+        price_alert = f"<@{user}> Price alert triggered! {symbol} at price {price}. Type: \"{type_alert}\""
+        volume_alert = f"<@{user}> Volume alert triggered! {symbol} above 2X volume on {timeframe} timeframe."
+        msg =  volume_alert if type_alert == "volume" else price_alert
+        await alert_channel.send(msg)
 
     # Remove alerts after being triggered
-    [AlertLogger.rm_alert(alert["userid"], alert["symbol"], alert["type"], alert["price"]) for alert in price_triggers]
+    [AlertLogger.rm_alert(alert["userid"], alert["symbol"], alert["type"], alert["price"]) for alert in (price_triggers + vol_triggers)]
 
     # update_channel = bot.get_channel(bot_updates_channel)
     # await update_channel.send(f"{datetime.utcnow()} - Done scraping!")
@@ -95,7 +100,7 @@ async def alert(ctx, symbol, type, price = 0, timeframe = '1h'):
     else:
         # Get user ID
         uid = ctx.author.id
-        AlertLogger.add_alert(uid, symbol, type, price)
+        AlertLogger.add_alert(uid, symbol, type, price, timeframe)
         await ctx.respond(f"Set an alert for {symbol}!")
 
 
@@ -110,7 +115,7 @@ async def rmalert(ctx, symbol, type, price = 0, timeframe = '1h'):
     else:
         uid = ctx.author.id
         try:
-            AlertLogger.rm_alert(uid, symbol, type, price)
+            AlertLogger.rm_alert(uid, symbol, type, price, timeframe)
             await ctx.respond(f"Alert for {symbol} deleted!")
         except:
             await ctx.respond("An error occured... Are you sure the alert exists?")

@@ -7,7 +7,10 @@ class TradeFinder:
         self.DataStreamer = DataStreamer
         self.all_coins = [coin for coin in self.DataStreamer.get_symbols() if "USDT" in coin[3:]] # ["ETHUSDT", "BTCUSDT", "BNBUSDT", "SOLUSDT", "ADAUSDT"]
         self.TechnicalAnalyzer = TechnicalAnalyzer
+        
+        # TODO Add option to customize these threasholds
         self.VOL_THREASHOLD = 5
+        self.VOL_ALERT_THREASHOLD = 2
         
     def check_vol(self):
         # Empty dataframe that contains all coins with a volume greater than 3X the volume moving average
@@ -70,12 +73,16 @@ class TradeFinder:
             for symbol in symbols:
                 alerts = file[symbol]
                 # Get volume alerts
-                vol_alerts = [alert for alert in alerts if alert["type"] == "up"]
+                vol_alerts = [alert for alert in alerts if alert["type"] == "volume"]
 
                 for alert in vol_alerts:
                     candles = self.DataStreamer.getKlines(symbol, 20, alert["timeframe"])
                     vma = self.TechnicalAnalyzer.vma(candles, 20)
-                    triggered = triggered + alert if candles["Volume"] > self.VOL_THREASHOLD * vma else triggered
+                    volume, open_price, close_price = candles["Volume"].iloc[-1], candles["Open"].iloc[-1], candles["Close"].iloc[-1]
+                    
+                    # TODO Check TODO In top of file
+                    if (volume > self.VOL_ALERT_THREASHOLD * vma) and (close_price > open_price):
+                        triggered.append(alert)
             
             log_file.close()
         return triggered

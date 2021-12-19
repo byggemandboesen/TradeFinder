@@ -6,9 +6,9 @@ class Logger:
 
 
     # Add alert
-    def add_alert(self, uid, symbol, type, price):
+    def add_alert(self, uid, symbol, type, price, timeframe):
         symbol = symbol.upper()
-        parsed_alert = self.parse_alert(symbol, uid, type, price)
+        parsed_alert = self.parse_alert(symbol, uid, type, price, timeframe)
 
         # Check if log file already exists
         if os.path.isfile(self.log_path):
@@ -32,8 +32,8 @@ class Logger:
     
 
     # Remove alert
-    def rm_alert(self, uid, symbol, type, price):
-        alert_to_remove = self.parse_alert(symbol, uid, type, price)
+    def rm_alert(self, uid, symbol, type, price, timeframe):
+        alert_to_remove = self.parse_alert(symbol, uid, type, price, timeframe)
         
         with open(self.log_path, "r+") as log_file:
             file = json.load(log_file)

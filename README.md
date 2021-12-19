@@ -26,8 +26,7 @@ In ```config.json``` one can set the chat that the bot should send alerts in. Th
 ```json
 {
     "guild_id": 01234567890123456789,
-    "bot_updates_channel": 09876543210987654321,
-    "alerts_channel": 010203040506070809,
+    "alerts_channel": 09876543210987654321,
     "volume_breakout_channel": ""
 }
 ```
