@@ -37,7 +37,7 @@ async def on_ready():
     if not scrape_market.is_running():
         scrape_market.start()
 
-@tasks.loop(seconds = 15)
+@tasks.loop(seconds = 300)
 async def scrape_market():
     update_channel = bot.get_channel(bot_updates_channel)
     # await update_channel.send(f"{datetime.utcnow()} - Busy scraping market!")
