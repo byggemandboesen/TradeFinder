@@ -27,7 +27,6 @@ bot = discord.Bot()
 with open("config.json", "r") as file:
     parameters = json.load(file)
     guild_id = parameters["guild_id"]
-    bot_updates_channel = parameters["bot_updates_channel"]
     alerts_channel = parameters["alerts_channel"]
     vol_breakout_alerts = None if parameters["volume_breakout_channel"] == "" else parameters["volume_breakout_channel"]
 
@@ -37,10 +36,8 @@ async def on_ready():
     if not scrape_market.is_running():
         scrape_market.start()
 
-@tasks.loop(seconds = 300)
+@tasks.loop(seconds = 180)
 async def scrape_market():
-    update_channel = bot.get_channel(bot_updates_channel)
-    # await update_channel.send(f"{datetime.utcnow()} - Busy scraping market!")
     print(f"{datetime.utcnow()} - Busy scraping market!")
 
     # Do market scrape if channel is supplied in parameters.json
@@ -54,28 +51,27 @@ async def scrape_market():
             await channel.send(f"Caught high volume breakouts!\n{movers.to_string()}")
 
     # Check if any alerts have been triggered
-    symbols = AlertLogger.get_symbols()
-    price_triggers = TradeScraper.check_price_alerts(symbols)
-    vol_triggers = TradeScraper.check_volume_alerts(symbols)
+    if os.path.isfile("alerts.json"):
+        symbols = AlertLogger.get_symbols()
+        price_triggers = TradeScraper.check_price_alerts(symbols)
+        vol_triggers = TradeScraper.check_volume_alerts(symbols)
 
-    # Alert users that created their alerts
-    alert_channel = bot.get_channel(alerts_channel)
-    for alert in (price_triggers + vol_triggers):
-        user = alert["userid"]
-        symbol = alert["symbol"]
-        price = alert["price"]
-        type_alert = alert["type"]
-        timeframe = alert["timeframe"]
-        price_alert = f"<@{user}> Price alert triggered! {symbol} at price {price}. Type: \"{type_alert}\""
-        volume_alert = f"<@{user}> Volume alert triggered! {symbol} above 2X volume on {timeframe} timeframe."
-        msg =  volume_alert if type_alert == "volume" else price_alert
-        await alert_channel.send(msg)
+        # Alert users that created their alerts
+        alert_channel = bot.get_channel(alerts_channel)
+        for alert in (price_triggers + vol_triggers):
+            user = alert["userid"]
+            symbol = alert["symbol"]
+            price = alert["price"]
+            type_alert = alert["type"]
+            timeframe = alert["timeframe"]
+            vol_multiple = alert["vol_multiple"]
+            price_alert = f"<@{user}> Price alert triggered! {symbol} at price {price}. Type: \"{type_alert}\""
+            volume_alert = f"<@{user}> Volume alert triggered! {symbol} volume {vol_multiple}X above average on {timeframe} timeframe."
+            msg =  volume_alert if type_alert == "volume" else price_alert
+            await alert_channel.send(msg)
 
-    # Remove alerts after being triggered
-    [AlertLogger.rm_alert(alert["userid"], alert["symbol"], alert["type"], alert["price"]) for alert in (price_triggers + vol_triggers)]
-
-    # update_channel = bot.get_channel(bot_updates_channel)
-    # await update_channel.send(f"{datetime.utcnow()} - Done scraping!")
+        # Remove alerts after being triggered
+        [AlertLogger.rm_alert(alert) for alert in (price_triggers + vol_triggers)]
     print(f"{datetime.utcnow()} - Done scraping!")
 
 @scrape_market.before_loop
@@ -88,8 +84,8 @@ async def set_status():
 
 
 # Add an alert for a symbol pair when certain price is crossed
-@bot.slash_command(guild_ids = [guild_id], name = "alert", description = "Add an alert for a price movement or volume breakout on certain timeframe")
-async def alert(ctx, symbol, type, price = 0, timeframe = '1h'):
+@bot.slash_command(guild_ids = [guild_id], name = "pricealert", description = "Add an alert for a symbol pair price movement")
+async def price_alert(ctx, symbol, type, price):
     symbol = symbol.upper()
     if not DataStreamer.check_symbol(symbol):
         await ctx.respond("That sucks.... I looked everywhere on Binance, but I can't find this symbol pair:cry:")
@@ -98,25 +94,53 @@ async def alert(ctx, symbol, type, price = 0, timeframe = '1h'):
     else:
         # Get user ID
         uid = ctx.author.id
-        AlertLogger.add_alert(uid, symbol, type, price, timeframe)
+        AlertLogger.add_alert(uid, symbol, type, price, timeframe = '', volume_multiple = 0)
+        await ctx.respond(f"Set an alert for {symbol}!")
+
+
+# Add a volume breakout alert for certain symbol on chosen timeframe
+@bot.slash_command(guild_ids = [guild_id], name = "volumealert", description = "Add a volume breakout alert for a symbol pair on certain timeframe")
+async def volume_alert(ctx, symbol, timeframe, volume_multiple):
+    symbol = symbol.upper()
+    if not DataStreamer.check_symbol(symbol):
+        await ctx.respond("That sucks.... I looked everywhere on Binance, but I can't find this symbol pair:cry:")
+    elif not DataStreamer.check_timeframe(timeframe):
+        await ctx.respond("Please add a valid timeframe...")
+    else:
+        # Get user ID
+        uid = ctx.author.id
+        AlertLogger.add_alert(uid, symbol, type = "volume", price = 0, timeframe = timeframe, volume_multiple = volume_multiple)
         await ctx.respond(f"Set an alert for {symbol}!")
 
 
 # Remove alert
-@bot.slash_command(guild_ids = [guild_id], name = "rmalert", description = "Remove an alert")
-async def rmalert(ctx, symbol, type, price = 0, timeframe = '1h'):
-    symbol = symbol.upper()
-    if not DataStreamer.check_symbol(symbol):
-        await ctx.respond("That sucks.... I looked everywhere on Binance, but I can't find this symbol pair:cry:")
-    elif type not in ("up", "down", "volume"):
-        await ctx.respond("Please add a valid type for this alert: up, down, volume")
-    else:
-        uid = ctx.author.id
+# TODO Check if user id is the same, otherwise no permission to remove alert
+@bot.slash_command(guild_ids = [guild_id], name = "rmalert", description = "Remove an alert. Get available alerts with \"/getalerts\"")
+async def rmalert(ctx, alert):
+    uid = ctx.author.id
+    alert = json.loads(alert)
+    if uid == alert["userid"]:
         try:
-            AlertLogger.rm_alert(uid, symbol, type, price, timeframe)
-            await ctx.respond(f"Alert for {symbol} deleted!")
+            AlertLogger.rm_alert(alert)
+            await ctx.respond(f"Alert deleted!")
         except:
-            await ctx.respond("An error occured... Are you sure the alert exists?")
+            await ctx.respond("An error occured... Did you include the \"{ *alert* }\" (curley brackets) around the alert?")
+    else:
+        await ctx.respond("Unfortunately you do not have permission to remove this alert (not created by you) :lock:")
+
+
+# Sends all active alerts for some symbol
+@bot.slash_command(guild_ids = [guild_id], name = "getalerts", description = "Get all current alerts for chosen symbol")
+async def get_alerts(ctx, symbol):
+    symbol = symbol.upper()
+    if not symbol in AlertLogger.get_symbols():
+        await ctx.respond("There are currently no alerts for this symbol pair. Will you be the first to add one?")
+    else:
+        alerts = AlertLogger.get_alerts(symbol)
+        parsed_alerts = json.dumps(alerts, indent = 4)
+        await ctx.respond(f"Active alerts for {symbol}:\n ```json\n{parsed_alerts}\n```\n Copy one of the following if you wish to remove an alert:")
+        for alert in alerts:
+            await ctx.send(f"`{json.dumps(alert)}`")
 
 
 # Chart symbol pair last 24H
@@ -126,6 +150,7 @@ async def chart(ctx, symbol):
     if not DataStreamer.check_symbol(symbol):
         await ctx.respond("That sucks.... I looked everywhere on Binance, but I can't find this symbol pair:cry:")
     else:
+        # 5m candles over a span of 24H: 24*60/5 = 288
         candles = DataStreamer.getKlines(symbol, 288)
         chart = Charter(symbol, candles)
         chart_path = chart.create_chart()
@@ -134,6 +159,7 @@ async def chart(ctx, symbol):
         with open(chart_path, 'rb') as image:
             img = discord.File(image)
             await ctx.respond(file = img)
+            image.close()
 
         os.remove(chart_path)
 

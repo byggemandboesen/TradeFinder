@@ -8,10 +8,10 @@ class TradeFinder:
         self.all_coins = [coin for coin in self.DataStreamer.get_symbols() if "USDT" in coin[3:]] # ["ETHUSDT", "BTCUSDT", "BNBUSDT", "SOLUSDT", "ADAUSDT"]
         self.TechnicalAnalyzer = TechnicalAnalyzer
         
-        # TODO Add option to customize these threasholds
+        # TODO Add option to customize this value
         self.VOL_THREASHOLD = 5
-        self.VOL_ALERT_THREASHOLD = 2
         
+    # Scrape market for high volume breakouts
     def check_vol(self):
         # Empty dataframe that contains all coins with a volume greater than 3X the volume moving average
         columns = ["Coins", "Percent volume increase", "Percent price increase"]
@@ -36,6 +36,8 @@ class TradeFinder:
         df = df.set_index("Coins", inplace = False) if len(df.index) > 0 else None
         return df
     
+
+    # Check if any price alerts should be triggered
     def check_price_alerts(self, symbols):
         triggered = []
         # Open the alerts file for all symbols
@@ -62,8 +64,8 @@ class TradeFinder:
 
         return triggered
     
+
     # Check for volume breakout alerts on their corresponding timeframe
-    # TODO Maybe merge function with function above
     def check_volume_alerts(self, symbols):
         triggered = []
 
@@ -76,12 +78,12 @@ class TradeFinder:
                 vol_alerts = [alert for alert in alerts if alert["type"] == "volume"]
 
                 for alert in vol_alerts:
+                    vol_multiple = float(alert["vol_multiple"])
                     candles = self.DataStreamer.getKlines(symbol, 20, alert["timeframe"])
                     vma = self.TechnicalAnalyzer.vma(candles, 20)
                     volume, open_price, close_price = candles["Volume"].iloc[-1], candles["Open"].iloc[-1], candles["Close"].iloc[-1]
                     
-                    # TODO Check TODO In top of file
-                    if (volume > self.VOL_ALERT_THREASHOLD * vma) and (close_price > open_price):
+                    if (volume > vol_multiple * vma) and (close_price > open_price):
                         triggered.append(alert)
             
             log_file.close()

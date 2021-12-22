@@ -16,6 +16,7 @@ You may need to install py-cord with the following command to allow the use of s
 ```bash
 pip install -U git+https://github.com/Pycord-Development/pycord
 ```
+This will require python version >=3.8.0.
 
 **NOTE WHEN ADDING BOT TO SERVER** - Remember to give the bot permission to use commands and to be a bot when adding the bot to your server! <br>
 https://discord.com/developers/applications/your-application-id/oauth2/url-generator <br>

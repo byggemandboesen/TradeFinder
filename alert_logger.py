@@ -1,3 +1,4 @@
+from logging import log
 import os, json
 
 class Logger:
@@ -6,9 +7,9 @@ class Logger:
 
 
     # Add alert
-    def add_alert(self, uid, symbol, type, price, timeframe):
+    def add_alert(self, uid, symbol, type, price, timeframe, volume_multiple):
         symbol = symbol.upper()
-        parsed_alert = self.parse_alert(symbol, uid, type, price, timeframe)
+        parsed_alert = self.parse_alert(symbol, uid, type, price, timeframe, volume_multiple)
 
         # Check if log file already exists
         if os.path.isfile(self.log_path):
@@ -32,8 +33,9 @@ class Logger:
     
 
     # Remove alert
-    def rm_alert(self, uid, symbol, type, price, timeframe):
-        alert_to_remove = self.parse_alert(symbol, uid, type, price, timeframe)
+    def rm_alert(self, alert_to_remove):
+        # alert_to_remove = self.parse_alert(symbol, uid, type, price, timeframe)
+        symbol = alert_to_remove["symbol"]
         
         with open(self.log_path, "r+") as log_file:
             file = json.load(log_file)
@@ -54,15 +56,26 @@ class Logger:
             
 
     # Parse alert
-    def parse_alert(self, symbol, uid, type, price, timeframe):
+    def parse_alert(self, symbol, uid, type, price, timeframe, volume_multiple):
         parsed_alert = {
             "symbol": symbol,
             "userid": uid,
             "type": type,
             "price": price,
-            "timeframe": timeframe
+            "timeframe": timeframe,
+            "vol_multiple": volume_multiple
         }
         return parsed_alert
+
+
+    # Return all alerts for certain symbol
+    def get_alerts(self, symbol):
+        with open(self.log_path, "r") as log_file:
+            file = json.load(log_file)
+            alerts = file[symbol]
+            log_file.close()
+        
+        return alerts
 
 
     # Parse a trendline from Tradingview coordinates
