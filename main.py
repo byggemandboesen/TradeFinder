@@ -36,11 +36,11 @@ async def on_ready():
     if not scrape_market.is_running():
         scrape_market.start()
 
-@tasks.loop(seconds = 180)
+@tasks.loop(seconds = 18)
 async def scrape_market():
     print(f"{datetime.utcnow()} - Busy scraping market!")
 
-    # Do market scrape if channel is supplied in parameters.json
+    # Do market scrape if channel is supplied in config.json
     if vol_breakout_alerts is not None:
         # Check for high volume moves to the upside
         movers = TradeScraper.check_vol()
@@ -114,9 +114,8 @@ async def volume_alert(ctx, symbol, timeframe, volume_multiple):
 
 
 # Remove alert
-# TODO Check if user id is the same, otherwise no permission to remove alert
-@bot.slash_command(guild_ids = [guild_id], name = "rmalert", description = "Remove an alert. Get available alerts with \"/getalerts\"")
-async def rmalert(ctx, alert):
+@bot.slash_command(guild_ids = [guild_id], name = "removealert", description = "Remove an alert. Get available alerts with \"/getalerts\"")
+async def removemalert(ctx, alert):
     uid = ctx.author.id
     alert = json.loads(alert)
     if uid == alert["userid"]:
