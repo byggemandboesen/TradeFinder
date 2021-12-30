@@ -149,6 +149,7 @@ async def chart(ctx, symbol):
     if not DataStreamer.check_symbol(symbol):
         await ctx.respond("That sucks.... I looked everywhere on Binance, but I can't find this symbol pair:cry:")
     else:
+        await ctx.respond(f"Drawing chart for {symbol}...")
         # 5m candles over a span of 24H: 24*60/5 = 288
         candles = DataStreamer.getKlines(symbol, 288)
         chart = Charter(symbol, candles)
@@ -157,7 +158,7 @@ async def chart(ctx, symbol):
         # Send chart in given path and delete after done
         with open(chart_path, 'rb') as image:
             img = discord.File(image)
-            await ctx.respond(file = img)
+            await ctx.send(file = img)
             image.close()
 
         os.remove(chart_path)

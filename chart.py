@@ -35,7 +35,7 @@ class Charter:
        
         plt.tight_layout()
         path = f'./{self.SYMBOL}.png'
-        plt.savefig(path, dpi = 200)
+        plt.savefig(path, dpi = 150)
         plt.close()
         return path
 
