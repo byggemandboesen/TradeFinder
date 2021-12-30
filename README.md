@@ -22,6 +22,13 @@ This will require python version >=3.8.0.
 https://discord.com/developers/applications/your-application-id/oauth2/url-generator <br>
 And remember to add the bot token as well, in the bottom of the main file...
 
+### Running on Raspberry pi
+Some Raspberry pi devices may throw an error like, ```Importing the numpy c-extensions failed```. For this, run:
+```bash
+sudo apt-get install libatlas-base-dev
+```
+This is taken from this [GitHub issue](https://github.com/numpy/numpy/issues/15744).
+
 ## Customizing the bot
 In ```config.json``` one can set the chat that the bot should send alerts in. This includes different types of alerts: Volume breakouts, added price alerts.
 ```json
