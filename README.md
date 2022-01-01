@@ -46,9 +46,9 @@ One should also add the guild id (server id) when using the bot. This will make 
 ## Features
 This section will cover the available commands and how to use them. This will be updated as commands change and when commands are removed/added. <br>
 
-1. **Price alert**(/pricealert)
-Do you want to know exactly when a certain trading pair, BTCUSDT, ADAUSDT, BTCETH and etc, cross a certain valuation price? If so, this command is for you.<br>
-**Requirements**<br>
+### Price alert (/pricealert)
+Do you want to know exactly when a certain trading pair, BTCUSDT, ADAUSDT, BTCETH and etc, cross a certain valuation price? If so, this command is for you.
+#### Requirements
 - Symbol (BTCUSDT etc)
 - Type (up/down)
 - Price (self-explanatory)
@@ -70,9 +70,9 @@ This will generate the following alert in alerts.json:
 ```
 With every alert the user id of the user who created the alert will be stored. This is used to ping the user when the alert is triggered and to check if someone has the permission to remove the alert (see command for removing alerts).
 
-2. **Volume alert** (/volumealert)
-Are you watching for a breakout for a certain coin? If so, this command might be for you.<br>
-**Requirements**<br>
+### Volume alert (/volumealert)
+Are you watching for a breakout for a certain coin? If so, this command might be for you.
+#### Requirements
 - Symbol
 - Timeframe (1m, 5m, 15m, 4h, 1d...)
 - Volume multiple (2, 3, 4, 10...)
@@ -95,21 +95,21 @@ This will create the following alert:
 }
 ```
 
-3. **Get alerts** (/getalerts)
-Get all alerts created for certain symbol.<br>
-**Requirements**<br>
+### Get alerts (/getalerts)
+Get all alerts created for certain symbol.
+#### Requirements
 - Symbol
 
 Example usage:
 ```
 /getalerts symbol:btcusdt 
 ```
-This will send the following message from the two alerts created above:
+This will send the following message from the two alerts created above:<br>
 ![/getalerts example output](https://github.com/byggemandboesen/TradeFinder/blob/main/Images/getalerts.jpg)
 
-4. **Remove alert** (/rmalert)
-Rather self explanatory, this alert is used to remove a certain alert. However, you can ***only*** delete alerts that you created!<br>
-**Requirements**<br>
+### Remove alert (/rmalert)
+Rather self explanatory, this alert is used to remove a certain alert. However, you can ***only*** delete alerts that you created!
+#### Requirements
 - Alert
 
 Use the ```/getalerts``` command to get the alert you wish to remove and copy it into the message field.<br>
@@ -120,7 +120,17 @@ Example usage:
 ```
 The bot will then reply if the alert was removed succesfully.
 
-5. **Chart** (/chart)
+### Chart (/chart)
 This command creates a candle stick chart for a given symbol the previous 24H on 5m candles.
+#### Requirements
+- Symbol
+
+Example usage:
+```
+/chart symbol:btcusdt
+```
+Which generates the following chart and sends it in the chat. <br>
+![Chart from chart command](https://github.com/byggemandboesen/TradeFinder/blob/main/Images/chart.jpg)
+
 
 *More commands coming soon*
