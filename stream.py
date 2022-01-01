@@ -14,11 +14,18 @@ class Streamer:
     # Returns historic klines
     def getKlines(self, symbols, limit = 1, timeframe = '5m'):
         # Create dataframe with OHLCV data for each symbol pair
-        if limit == 1:
-            candles = [self.exchange.fetch_ohlcv(symbol, timeframe = timeframe, limit=limit)[0] for symbol in symbols]
-        else:
-            candles = self.exchange.fetch_ohlcv(symbols, timeframe = timeframe, limit=limit)
-        
+        try:
+            if limit == 1:
+                candles = [self.exchange.fetch_ohlcv(symbol, timeframe = timeframe, limit=limit)[0] for symbol in symbols]
+            else:
+                candles = self.exchange.fetch_ohlcv(symbols, timeframe = timeframe, limit=limit)
+        except Exception as e:
+            self.exchange = ccxt.binance()
+            if limit == 1:
+                candles = [self.exchange.fetch_ohlcv(symbol, timeframe = timeframe, limit=limit)[0] for symbol in symbols]
+            else:
+                candles = self.exchange.fetch_ohlcv(symbols, timeframe = timeframe, limit=limit)
+
         df = pd.DataFrame(candles, columns = ["Open time","Open","High","Low","Close","Volume"])
         # Convert unix to datetime
         df["Open time"] = pd.to_datetime(df["Open time"], unit = "ms")
