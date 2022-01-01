@@ -30,6 +30,7 @@ sudo apt-get install libatlas-base-dev
 This is taken from this [GitHub issue](https://github.com/numpy/numpy/issues/15744).
 
 ## Customizing the bot
+
 In ```config.json``` one can set the chat that the bot should send alerts in. This includes different types of alerts: Volume breakouts, added price alerts.
 ```json
 {
@@ -41,4 +42,85 @@ In ```config.json``` one can set the chat that the bot should send alerts in. Th
 One should also add the guild id (server id) when using the bot. This will make slash-commands available immediately after the bot is run.<br>
 **NOTE** that the ```"volume_breakout_channel"``` is left empty, or rather as "". This will disable high volume breakout scraping. If this is not desired, please insert the id of the channel you wish to receive alerts in.
 
-*More documentation coming soon*
+
+## Features
+This section will cover the available commands and how to use them. This will be updated as commands change and when commands are removed/added. <br>
+
+1. **Price alert**(/pricealert)
+Do you want to know exactly when a certain trading pair, BTCUSDT, ADAUSDT, BTCETH and etc, cross a certain valuation price? If so, this command is for you.<br>
+**Requirements**<br>
+- Symbol (BTCUSDT etc)
+- Type (up/down)
+- Price (self-explanatory)
+
+Example usage:
+```
+/pricealert symbol:btcusdt type:up price:50000 
+```
+This will generate the following alert in alerts.json:
+```json
+{
+    "symbol": "BTCUSDT",
+    "userid": 1234567890,
+    "type": "up",
+    "price": "50000",
+    "timeframe": "",
+    "vol_multiple": 0
+}
+```
+With every alert the user id of the user who created the alert will be stored. This is used to ping the user when the alert is triggered and to check if someone has the permission to remove the alert (see command for removing alerts).
+
+2. **Volume alert** (/volumealert)
+Are you watching for a breakout for a certain coin? If so, this command might be for you.<br>
+**Requirements**<br>
+- Symbol
+- Timeframe (1m, 5m, 15m, 4h, 1d...)
+- Volume multiple (2, 3, 4, 10...)
+
+This alert will compare the volume of the latest candle on the chosen timeframe to the 20 candle volume moving average. If the volume of the current candle is greater than ```Volume multiple * VMA``` then the alert will be triggered.
+
+Example usage:
+```
+/volumealert symbol:btcusdt timeframe:15m volume_multiple:3 
+```
+This will create the following alert:
+```json
+{
+    "symbol": "BTCUSDT",
+    "userid": 328543383771414528,
+    "type": "volume",
+    "price": 0,
+    "timeframe": "15m",
+    "vol_multiple": "3"
+}
+```
+
+3. **Get alerts** (/getalerts)
+Get all alerts created for certain symbol.<br>
+**Requirements**<br>
+- Symbol
+
+Example usage:
+```
+/getalerts symbol:btcusdt 
+```
+This will send the following message from the two alerts created above:
+![/getalerts example output](https://github.com/byggemandboesen/TradeFinder/blob/main/Images/getalerts.jpg)
+
+4. **Remove alert** (/rmalert)
+Rather self explanatory, this alert is used to remove a certain alert. However, you can ***only*** delete alerts that you created!<br>
+**Requirements**<br>
+- Alert
+
+Use the ```/getalerts``` command to get the alert you wish to remove and copy it into the message field.<br>
+
+Example usage:
+```
+/removealert alert:{"symbol": "BTCUSDT", "userid": 1234567890, "type": "up", "price": "50000", "timeframe": "", "vol_multiple": 0}
+```
+The bot will then reply if the alert was removed succesfully.
+
+5. **Chart** (/chart)
+This command creates a candle stick chart for a given symbol the previous 24H on 5m candles.
+
+*More commands coming soon*
