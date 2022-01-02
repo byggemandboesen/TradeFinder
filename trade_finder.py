@@ -18,7 +18,7 @@ class TradeFinder:
         df = pd.DataFrame(columns = columns)
         for coin in self.all_coins:
             try:
-                candles = self.DataStreamer.getKlines(coin, 21, "1m")
+                candles = self.DataStreamer.getKlines(coin, 21, "3m")
                 open, close = float(candles["Open"].iloc[-2]), float(candles["Close"].iloc[-2])
                 
                 # If current price is lower than candle open price don't bother going further
