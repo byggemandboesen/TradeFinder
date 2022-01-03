@@ -77,7 +77,7 @@ This will generate the following alert in alerts.json:
 }
 ```
 With every alert the user id of the user who created the alert will be stored. This is used to ping the user when the alert is triggered and to check if someone has the permission to remove the alert (see command for removing alerts).<br>
-Also note the keyword ```delete``` which by default is true and optional when adding an alert. If set to false then the alert will not be removed after being triggered. The alert can still be removed with the ````/removealert``` command.
+Also note the keyword ```delete``` which by default is true and optional when adding an alert. If set to false then the alert will not be removed after being triggered. The alert can still be removed with the ```/removealert``` command.
 
 ### Volume alert (/volumealert)
 Are you watching for a breakout for a certain coin? If so, this command might be for you.
