@@ -21,7 +21,7 @@ from helper import Helper
 bot = discord.Bot()
 
 # Read config
-parameters, ids = Helper.read_config()
+token, parameters, ids = Helper.read_config()
 guild_id = ids["guild_id"]
 
 # Initate classes
@@ -190,4 +190,4 @@ async def indicator(ctx, symbol, indicator, window='0', timeframe = '1h'):
 
 
 # Run bot
-bot.run("token")
+bot.run(token)

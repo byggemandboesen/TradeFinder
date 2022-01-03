@@ -8,12 +8,12 @@ class Helper():
         with open("config.json", "r") as file:
             parsed_file = json.load(file)
 
-            # Parameters
+            # Get token, parameters and ids
+            token = parsed_file["token"]
             parameters = parsed_file["parameters"]
-            # Ids
             ids = parsed_file["ids"]
 
-            return parameters, ids
+            return token, parameters, ids
 
     # Alert user if alert is triggered
     async def alert_user(channel, alerts):
