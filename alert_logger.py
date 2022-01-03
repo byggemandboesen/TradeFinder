@@ -1,4 +1,3 @@
-from logging import log
 import os, json
 
 class Logger:
@@ -7,9 +6,9 @@ class Logger:
 
 
     # Add alert
-    def add_alert(self, uid, symbol, type, price, timeframe, volume_multiple):
+    def add_alert(self, uid, symbol, type, price, timeframe, volume_multiple, delete):
         symbol = symbol.upper()
-        parsed_alert = self.parse_alert(symbol, uid, type, price, timeframe, volume_multiple)
+        parsed_alert = self.parse_alert(symbol, uid, type, price, timeframe, volume_multiple, delete)
 
         # Check if log file already exists
         if os.path.isfile(self.log_path):
@@ -56,14 +55,15 @@ class Logger:
             
 
     # Parse alert
-    def parse_alert(self, symbol, uid, type, price, timeframe, volume_multiple):
+    def parse_alert(self, symbol, uid, type, price, timeframe, volume_multiple, delete):
         parsed_alert = {
             "symbol": symbol,
             "userid": uid,
             "type": type,
             "price": price,
             "timeframe": timeframe,
-            "vol_multiple": volume_multiple
+            "vol_multiple": volume_multiple,
+            "delete": delete
         }
         return parsed_alert
 

@@ -1,15 +1,13 @@
 import json
-from numpy import log
 import pandas as pd
 
 class TradeFinder:
-    def __init__(self, DataStreamer, TechnicalAnalyzer):
+    def __init__(self, DataStreamer, TechnicalAnalyzer, vol_threashold):
         self.DataStreamer = DataStreamer
         self.all_coins = [coin for coin in self.DataStreamer.get_symbols() if "USDT" in coin[3:]] # ["ETHUSDT", "BTCUSDT", "BNBUSDT", "SOLUSDT", "ADAUSDT"]
         self.TechnicalAnalyzer = TechnicalAnalyzer
         
-        # TODO Add option to customize this value
-        self.VOL_THREASHOLD = 5
+        self.VOL_THREASHOLD = vol_threashold
         
     # Scrape market for high volume breakouts
     def check_vol(self):

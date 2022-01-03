@@ -9,26 +9,26 @@ import os
 
 # File imports
 from indicators import TA
-TechnicalAnalyzer = TA()
 from chart import Charter
 from stream import Streamer
-DataStreamer = Streamer()
 from trade_finder import TradeFinder
-TradeScraper = TradeFinder(DataStreamer, TechnicalAnalyzer)
 from alert_logger import Logger
-AlertLogger = Logger()
+from helper import Helper
 
 
 #-------------------------------------- Bot initiation and loop --------------------------------------#
 
 bot = discord.Bot()
 
-# Define channels
-with open("config.json", "r") as file:
-    parameters = json.load(file)
-    guild_id = parameters["guild_id"]
-    alerts_channel = parameters["alerts_channel"]
-    vol_breakout_alerts = None if parameters["volume_breakout_channel"] == "" else parameters["volume_breakout_channel"]
+# Read config
+parameters, ids = Helper.read_config()
+guild_id = ids["guild_id"]
+
+# Initate classes
+TechnicalAnalyzer = TA()
+DataStreamer = Streamer()
+TradeScraper = TradeFinder(DataStreamer, TechnicalAnalyzer, parameters["vol_breakout_threashold"])
+AlertLogger = Logger()
 
 @bot.event
 async def on_ready():
@@ -36,11 +36,12 @@ async def on_ready():
     if not scrape_market.is_running():
         scrape_market.start()
 
-@tasks.loop(seconds = 18)
+@tasks.loop(seconds = parameters["scrape_interval"])
 async def scrape_market():
     print(f"{datetime.utcnow()} - Busy scraping market!")
 
     # Do market scrape if channel is supplied in config.json
+    vol_breakout_alerts = None if ids["volume_breakout_channel"] == "" else ids["volume_breakout_channel"]
     if vol_breakout_alerts is not None:
         # Check for high volume moves to the upside
         movers = TradeScraper.check_vol()
@@ -56,22 +57,13 @@ async def scrape_market():
         price_triggers = TradeScraper.check_price_alerts(symbols)
         vol_triggers = TradeScraper.check_volume_alerts(symbols)
 
-        # Alert users that created their alerts
-        alert_channel = bot.get_channel(alerts_channel)
-        for alert in (price_triggers + vol_triggers):
-            user = alert["userid"]
-            symbol = alert["symbol"]
-            price = alert["price"]
-            type_alert = alert["type"]
-            timeframe = alert["timeframe"]
-            vol_multiple = alert["vol_multiple"]
-            price_alert = f"<@{user}> Price alert triggered! {symbol} at price {price}. Type: \"{type_alert}\""
-            volume_alert = f"<@{user}> Volume alert triggered! {symbol} volume {vol_multiple}X above average on {timeframe} timeframe."
-            msg =  volume_alert if type_alert == "volume" else price_alert
-            await alert_channel.send(msg)
+        # Alert users that their alert(s) has/have been triggered
+        alerts = price_triggers + vol_triggers
+        channel = bot.get_channel(ids["alerts_channel"])
+        await Helper.alert_user(channel, alerts)
 
         # Remove alerts after being triggered
-        [AlertLogger.rm_alert(alert) for alert in (price_triggers + vol_triggers)]
+        [AlertLogger.rm_alert(alert) for alert in alerts if alert["delete"] == "true"]
     print(f"{datetime.utcnow()} - Done scraping!")
 
 @scrape_market.before_loop
@@ -85,31 +77,37 @@ async def set_status():
 
 # Add an alert for a symbol pair when certain price is crossed
 @bot.slash_command(guild_ids = [guild_id], name = "pricealert", description = "Add an alert for a symbol pair price movement")
-async def price_alert(ctx, symbol, type, price):
+async def price_alert(ctx, symbol, type, price, delete_when_triggered = "true"):
     symbol = symbol.upper()
+    delete_when_triggered = delete_when_triggered.lower()
     if not DataStreamer.check_symbol(symbol):
         await ctx.respond("That sucks.... I looked everywhere on Binance, but I can't find this symbol pair:cry:")
     elif type not in ("up", "down", "volume"):
         await ctx.respond("Please add a valid type for this alert: up, down, volume")
+    elif delete_when_triggered not in ("true", "false"):
+        await ctx.respond("Incorrect value for \"delete_when_triggered\". Should be either true or false...")
     else:
         # Get user ID
         uid = ctx.author.id
-        AlertLogger.add_alert(uid, symbol, type, price, timeframe = '', volume_multiple = 0)
+        AlertLogger.add_alert(uid, symbol, type, price, timeframe = '', volume_multiple = 0, delete = delete_when_triggered)
         await ctx.respond(f"Set an alert for {symbol}!")
 
 
 # Add a volume breakout alert for certain symbol on chosen timeframe
 @bot.slash_command(guild_ids = [guild_id], name = "volumealert", description = "Add a volume breakout alert for a symbol pair on certain timeframe")
-async def volume_alert(ctx, symbol, timeframe, volume_multiple):
+async def volume_alert(ctx, symbol, timeframe, volume_multiple, delete_when_triggered = "true"):
     symbol = symbol.upper()
+    delete_when_triggered = delete_when_triggered.lower()
     if not DataStreamer.check_symbol(symbol):
         await ctx.respond("That sucks.... I looked everywhere on Binance, but I can't find this symbol pair:cry:")
     elif not DataStreamer.check_timeframe(timeframe):
         await ctx.respond("Please add a valid timeframe...")
+    elif delete_when_triggered not in ("true", "false"):
+        await ctx.respond("Incorrect value for \"delete_when_triggered\". Should be either true or false...")
     else:
         # Get user ID
         uid = ctx.author.id
-        AlertLogger.add_alert(uid, symbol, type = "volume", price = 0, timeframe = timeframe, volume_multiple = volume_multiple)
+        AlertLogger.add_alert(uid, symbol, type = "volume", price = 0, timeframe = timeframe, volume_multiple = volume_multiple, delete = delete_when_triggered)
         await ctx.respond(f"Set an alert for {symbol}!")
 
 

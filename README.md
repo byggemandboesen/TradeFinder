@@ -31,12 +31,19 @@ This is taken from this [GitHub issue](https://github.com/numpy/numpy/issues/157
 
 ## Customizing the bot
 
-In ```config.json``` one can set the chat that the bot should send alerts in. This includes different types of alerts: Volume breakouts, added price alerts.
+In ```config.json``` one can set the chat in which the bot should send alerts in. This includes different types of alerts: Volume breakouts and added price/volume alerts.
+It is also in the config file that one can change the time interval in seconds that the bot scrapes the market/checks if alerts are triggered together with the required volume multiplier for a low timeframe volume breakout.
 ```json
 {
-    "guild_id": 01234567890123456789,
-    "alerts_channel": 09876543210987654321,
-    "volume_breakout_channel": ""
+    "parameters": {
+        "scrape_interval": 15,
+        "vol_breakout_threashold": 5
+    },
+    "ids": {
+        "guild_id": 01234567890123456789,
+        "alerts_channel": 09876543210987654321,
+        "volume_breakout_channel": ""
+    }
 }
 ```
 One should also add the guild id (server id) when using the bot. This will make slash-commands available immediately after the bot is run.<br>
@@ -65,10 +72,12 @@ This will generate the following alert in alerts.json:
     "type": "up",
     "price": "50000",
     "timeframe": "",
-    "vol_multiple": 0
+    "vol_multiple": 0,
+    "delete": true
 }
 ```
-With every alert the user id of the user who created the alert will be stored. This is used to ping the user when the alert is triggered and to check if someone has the permission to remove the alert (see command for removing alerts).
+With every alert the user id of the user who created the alert will be stored. This is used to ping the user when the alert is triggered and to check if someone has the permission to remove the alert (see command for removing alerts).<br>
+Also note the keyword ```delete``` which by default is true and optional when adding an alert. If set to false then the alert will not be removed after being triggered. The alert can still be removed with the ````/removealert``` command.
 
 ### Volume alert (/volumealert)
 Are you watching for a breakout for a certain coin? If so, this command might be for you.
@@ -107,7 +116,7 @@ Example usage:
 This will send the following message from the two alerts created above:<br>
 ![/getalerts example output](https://github.com/byggemandboesen/TradeFinder/blob/main/Images/getalerts.jpg)
 
-### Remove alert (/rmalert)
+### Remove alert (/removealert)
 Rather self explanatory, this alert is used to remove a certain alert. However, you can ***only*** delete alerts that you created!
 #### Requirements
 - Alert
