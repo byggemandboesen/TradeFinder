@@ -35,6 +35,7 @@ In ```config.json``` one can set the chat in which the bot should send alerts in
 It is also in the config file that one can change the time interval in seconds that the bot scrapes the market/checks if alerts are triggered together with the required volume multiplier for a low timeframe volume breakout.
 ```json
 {
+    "token": "token",
     "parameters": {
         "scrape_interval": 15,
         "vol_breakout_threashold": 5
