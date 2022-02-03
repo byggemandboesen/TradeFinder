@@ -23,7 +23,6 @@ bot = discord.Bot()
 # Read config
 token, parameters, ids = Helper.read_config()
 GUILD_ID = ids["guild_id"]
-BOT_ID = ids["bot_id"]
 
 # Initate classes
 TechnicalAnalyzer = TA()
