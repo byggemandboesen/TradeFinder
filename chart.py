@@ -22,7 +22,6 @@ class Charter:
 
         chart_ax = fig.add_subplot(grid[0,0])
         vol_ax = fig.add_subplot(grid[1,0])
-        # TODO Share x-axis with volume chart
 
         pricesup=self.CANDLES[self.CANDLES.Close>=self.CANDLES.Open]
         pricesdown=self.CANDLES[self.CANDLES.Close<self.CANDLES.Open]
@@ -65,3 +64,5 @@ class Charter:
         ax.set_ylabel("Volume", fontsize = self.LABEL_SIZE)
         ax.set_xlabel("Time", fontsize = self.LABEL_SIZE)
         ax.grid(alpha = 0.25)
+
+# TODO Add VPVR (Volume Profile Visible Range)

@@ -22,7 +22,8 @@ bot = discord.Bot()
 
 # Read config
 token, parameters, ids = Helper.read_config()
-guild_id = ids["guild_id"]
+GUILD_ID = ids["guild_id"]
+BOT_ID = ids["bot_id"]
 
 # Initate classes
 TechnicalAnalyzer = TA()
@@ -76,7 +77,7 @@ async def set_status():
 
 
 # Add an alert for a symbol pair when certain price is crossed
-@bot.slash_command(guild_ids = [guild_id], name = "pricealert", description = "Add an alert for a symbol pair price movement")
+@bot.slash_command(guild_ids = [GUILD_ID], name = "pricealert", description = "Add an alert for a symbol pair price movement")
 async def price_alert(ctx, symbol, type, price, delete_when_triggered = "true"):
     symbol = symbol.upper()
     delete_when_triggered = delete_when_triggered.lower()
@@ -94,7 +95,7 @@ async def price_alert(ctx, symbol, type, price, delete_when_triggered = "true"):
 
 
 # Add a volume breakout alert for certain symbol on chosen timeframe
-@bot.slash_command(guild_ids = [guild_id], name = "volumealert", description = "Add a volume breakout alert for a symbol pair on certain timeframe")
+@bot.slash_command(guild_ids = [GUILD_ID], name = "volumealert", description = "Add a volume breakout alert for a symbol pair on certain timeframe")
 async def volume_alert(ctx, symbol, timeframe, volume_multiple, delete_when_triggered = "true"):
     symbol = symbol.upper()
     delete_when_triggered = delete_when_triggered.lower()
@@ -112,7 +113,7 @@ async def volume_alert(ctx, symbol, timeframe, volume_multiple, delete_when_trig
 
 
 # Remove alert
-@bot.slash_command(guild_ids = [guild_id], name = "removealert", description = "Remove an alert. Get available alerts with \"/getalerts\"")
+@bot.slash_command(guild_ids = [GUILD_ID], name = "removealert", description = "Remove an alert. Get available alerts with \"/getalerts\"")
 async def removemalert(ctx, alert):
     uid = ctx.author.id
     alert = json.loads(alert)
@@ -127,7 +128,7 @@ async def removemalert(ctx, alert):
 
 
 # Sends all active alerts for some symbol
-@bot.slash_command(guild_ids = [guild_id], name = "getalerts", description = "Get all current alerts for chosen symbol")
+@bot.slash_command(guild_ids = [GUILD_ID], name = "getalerts", description = "Get all current alerts for chosen symbol")
 async def get_alerts(ctx, symbol):
     symbol = symbol.upper()
     if not symbol in AlertLogger.get_symbols():
@@ -135,19 +136,19 @@ async def get_alerts(ctx, symbol):
     else:
         alerts = AlertLogger.get_alerts(symbol)
         parsed_alerts = json.dumps(alerts, indent = 4)
-        await ctx.respond(f"Active alerts for {symbol}:\n ```json\n{parsed_alerts}\n```\n Copy one of the following if you wish to remove an alert:")
+        await ctx.respond(f"Active alerts for {symbol}:\n ```json\n{parsed_alerts}\n```\n Copy one of the following if you wish to remove an alert:", delete_after = 30)
         for alert in alerts:
-            await ctx.send(f"`{json.dumps(alert)}`")
+            await ctx.send(f"`{json.dumps(alert)}`", delete_after = 60)
 
 
 # Chart symbol pair last 24H
-@bot.slash_command(guild_ids = [guild_id], name = "chart", description = "Plot a currency pair 24H back")
+@bot.slash_command(guild_ids = [GUILD_ID], name = "chart", description = "Plot a currency pair 24H back")
 async def chart(ctx, symbol):
     symbol = symbol.upper()
     if not DataStreamer.check_symbol(symbol):
         await ctx.respond("That sucks.... I looked everywhere on Binance, but I can't find this symbol pair:cry:")
     else:
-        await ctx.respond(f"Drawing chart for {symbol}...")
+        await ctx.respond(f"Drawing chart for {symbol}...", delete_after = 60)
         # 5m candles over a span of 24H: 24*60/5 = 288
         candles = DataStreamer.getKlines(symbol, 288)
         chart = Charter(symbol, candles)
@@ -156,14 +157,14 @@ async def chart(ctx, symbol):
         # Send chart in given path and delete after done
         with open(chart_path, 'rb') as image:
             img = discord.File(image)
-            await ctx.send(file = img)
+            await ctx.send(file = img, delete_after = 60)
             image.close()
 
         os.remove(chart_path)
 
 
 # Get the value of a certain indicator from at certain symbol pair
-@bot.slash_command(guild_ids = [guild_id], name = "indicator", description = "Get the latest value of a certain indicator on a certain timeframe")
+@bot.slash_command(guild_ids = [GUILD_ID], name = "indicator", description = "Get the latest value of a certain indicator on a certain timeframe")
 async def indicator(ctx, symbol, indicator, window='0', timeframe = '1h'):
     symbol = symbol.upper()
     if not DataStreamer.check_symbol(symbol):
@@ -178,9 +179,16 @@ async def indicator(ctx, symbol, indicator, window='0', timeframe = '1h'):
         await ctx.respond(f"Indicator, \"{indicator}\", for symbol, {symbol}, is currently at:\n{val}\n- on {timeframe} timeframe.")
 
 
+# For clearing chat
+@bot.slash_command(guild_ids = [GUILD_ID], name = "clear", describtion = "Clear the previous, \"n\", bot messages")
+async def clear(ctx, amount = 10):
+    await ctx.respond(f"Deleting {amount} messages!")
+    channel = bot.get_channel(ids["alerts_channel"])
+    await channel.purge(limit = int(amount))
+
 # Parse trendline information
 # TODO Figure out a way to parse trendline information
-# @bot.slash_command(guild_ids = [guild_id], name = "parse", description = "Parse trendline information to add to an alert")
+# @bot.slash_command(guild_ids = [GUILD_ID], name = "parse", description = "Parse trendline information to add to an alert")
 # async def parse(ctx, price1, bar1, price2, bar2, timeframe):
 #     point1 = [price1, bar1]
 #     point2 = [price2, bar2]

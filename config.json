@@ -1,12 +1,13 @@
 {
     "token": "token",
     "parameters": {
-        "scrape_interval": 15,
+        "scrape_interval": 150,
         "vol_breakout_threashold": 5
     },
     "ids": {
         "guild_id": 01234567890123456789,
         "alerts_channel": 09876543210987654321,
-        "volume_breakout_channel": ""
+        "volume_breakout_channel": "",
+        "bot_id": 0102030405060708090
     }
 }
