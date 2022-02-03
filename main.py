@@ -182,20 +182,13 @@ async def indicator(ctx, symbol, indicator, window='0', timeframe = '1h'):
 # For clearing chat
 @bot.slash_command(guild_ids = [GUILD_ID], name = "clear", describtion = "Clear the previous, \"n\", bot messages")
 async def clear(ctx, amount = 10):
-    await ctx.respond(f"Deleting {amount} messages!")
-    channel = bot.get_channel(ids["alerts_channel"])
-    await channel.purge(limit = int(amount))
-
-# Parse trendline information
-# TODO Figure out a way to parse trendline information
-# @bot.slash_command(guild_ids = [GUILD_ID], name = "parse", description = "Parse trendline information to add to an alert")
-# async def parse(ctx, price1, bar1, price2, bar2, timeframe):
-#     point1 = [price1, bar1]
-#     point2 = [price2, bar2]
-#     parsed_trendline = AlertLogger.parse_trendline(point1, point2, timeframe)
-#     await ctx.send("Unfortunately this is still work in progress...")
-#     # await ctx.send(f"Here's your parsed trendline ready to be added to an alert!: {parsed_trendline}")
-
+    # First check if user is moderator/admin and has permission to delete messages
+    if ctx.author.guild_permissions.administrator:
+        await ctx.respond(f"Deleting {amount} messages!")
+        channel = bot.get_channel(ids["alerts_channel"])
+        await channel.purge(limit = int(amount))
+    else:
+        await ctx.respond("Unfortunately you do not have permission to use this command :cry:")
 
 # Run bot
 bot.run(token)
