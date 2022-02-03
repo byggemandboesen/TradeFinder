@@ -2,12 +2,13 @@ import json
 import pandas as pd
 
 class TradeFinder:
-    def __init__(self, DataStreamer, TechnicalAnalyzer, vol_threashold):
+    def __init__(self, DataStreamer, TechnicalAnalyzer, vol_threashold, vol_timeframe):
         self.DataStreamer = DataStreamer
         self.all_coins = [coin for coin in self.DataStreamer.get_symbols() if "USDT" in coin[3:]] # ["ETHUSDT", "BTCUSDT", "BNBUSDT", "SOLUSDT", "ADAUSDT"]
         self.TechnicalAnalyzer = TechnicalAnalyzer
         
         self.VOL_THREASHOLD = vol_threashold
+        self.VOL_TIMEFRAME = vol_timeframe
         
     # Scrape market for high volume breakouts
     def check_vol(self):
@@ -16,7 +17,7 @@ class TradeFinder:
         df = pd.DataFrame(columns = columns)
         for coin in self.all_coins:
             try:
-                candles = self.DataStreamer.getKlines(coin, 21, "15m")
+                candles = self.DataStreamer.getKlines(coin, 21, self.VOL_TIMEFRAME)
                 open, close = float(candles["Open"].iloc[-2]), float(candles["Close"].iloc[-2])
                 
                 # If current price is lower than candle open price don't bother going further

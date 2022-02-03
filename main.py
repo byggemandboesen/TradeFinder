@@ -27,7 +27,7 @@ GUILD_ID = ids["guild_id"]
 # Initate classes
 TechnicalAnalyzer = TA()
 DataStreamer = Streamer()
-TradeScraper = TradeFinder(DataStreamer, TechnicalAnalyzer, parameters["vol_breakout_threashold"])
+TradeScraper = TradeFinder(DataStreamer, TechnicalAnalyzer, parameters["vol_breakout_threashold"], parameters["vol_breakout_timeframe"])
 AlertLogger = Logger()
 
 @bot.event

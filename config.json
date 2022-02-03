@@ -2,7 +2,8 @@
     "token": "token",
     "parameters": {
         "scrape_interval": 15,
-        "vol_breakout_threashold": 5
+        "vol_breakout_threashold": 5,
+        "vol_breakout_timeframe": "5m"
     },
     "ids": {
         "guild_id": 01234567890123456789,
