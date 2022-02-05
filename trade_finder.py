@@ -20,12 +20,12 @@ class TradeFinder:
                 candles = self.DataStreamer.getKlines(coin, 21, self.VOL_TIMEFRAME)
                 open, close = float(candles["Open"].iloc[-2]), float(candles["Close"].iloc[-2])
                 
-                # If current price is lower than candle open price don't bother going further
-                if open > close:
+                percent_up = round((close - open) * 100 / open, 2)
+                # If current price < candle open price or price increase != > 1% don't bother going further
+                if open > close or percent_up < 1.0:
                     continue
                 else:
                     vma = self.TechnicalAnalyzer.vma(candles, 20)
-                    percent_up = round((close - open) * 100 / open, 2)
                     vol_diff = round((candles["Volume"].iloc[-2] - vma) * 100 / vma, 2)
                     temp_df = pd.DataFrame([[coin, vol_diff, percent_up]], columns = columns)
                     df = pd.concat([df, temp_df], ignore_index = True) if (float(temp_df["Percent volume increase"]) > self.VOL_THREASHOLD * 100) else df
