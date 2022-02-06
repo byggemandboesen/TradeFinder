@@ -18,7 +18,7 @@ class TradeFinder:
         for coin in self.all_coins:
             try:
                 candles = self.DataStreamer.getKlines(coin, 21, self.VOL_TIMEFRAME)
-                open, close = float(candles["Open"].iloc[-2]), float(candles["Close"].iloc[-2])
+                open, close = float(candles["Open"].iloc[-1]), float(candles["Close"].iloc[-1])
                 
                 percent_up = round((close - open) * 100 / open, 2)
                 # If current price < candle open price or price increase != > 1% don't bother going further
