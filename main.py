@@ -1,4 +1,5 @@
 # Discord imports
+from tkinter import Pack
 import discord
 from discord.ext import tasks
 
@@ -8,12 +9,12 @@ import json
 import os
 
 # File imports
-from indicators import TA
-from chart import Charter
-from stream import Streamer
-from trade_finder import TradeFinder
-from alert_logger import Logger
-from helper import Helper
+from src.indicators import TA
+from src.chart import Charter
+from src.stream import Streamer
+from src.trade_finder import TradeFinder
+from src.alert_logger import Logger
+from src.helper import Helper
 
 
 #-------------------------------------- Bot initiation and loop --------------------------------------#
@@ -21,13 +22,15 @@ from helper import Helper
 bot = discord.Bot()
 
 # Read config
-token, parameters, ids = Helper.read_config()
+TOKEN, PARAMETERS, ids, PAIRS = Helper.read_config()
+# Make pairs upper case
+PAIRS = [pair.upper() for pair in PAIRS]
 GUILD_ID = ids["guild_id"]
 
 # Initate classes
 TechnicalAnalyzer = TA()
 DataStreamer = Streamer()
-TradeScraper = TradeFinder(DataStreamer, TechnicalAnalyzer, parameters["vol_breakout_threashold"], parameters["vol_breakout_timeframe"])
+TradeScraper = TradeFinder(DataStreamer, TechnicalAnalyzer, PARAMETERS["vol_breakout_threashold"], PARAMETERS["vol_breakout_timeframe"])
 AlertLogger = Logger()
 
 @bot.event
@@ -36,7 +39,7 @@ async def on_ready():
     if not scrape_market.is_running():
         scrape_market.start()
 
-@tasks.loop(seconds = parameters["scrape_interval"])
+@tasks.loop(seconds = PARAMETERS["scrape_interval"])
 async def scrape_market():
     print(f"{datetime.utcnow()} - Busy scraping market!")
 
@@ -44,12 +47,12 @@ async def scrape_market():
     vol_breakout_alerts = None if ids["volume_breakout_channel"] == "" else ids["volume_breakout_channel"]
     if vol_breakout_alerts is not None:
         # Check for high volume moves to the upside
-        movers = TradeScraper.check_vol()
-        if movers is None:
+        tfs_triggers = TradeScraper.check_vol(PAIRS)
+        if tfs_triggers is None:
             print("No high volume breakouts!")
         else:
             channel = bot.get_channel(vol_breakout_alerts)
-            await channel.send(f"Caught high volume breakouts!\n{movers.to_string()}")
+            await channel.send(f"Caught high volume breakouts!\n{tfs_triggers.to_string()}")
 
     # Check if any alerts have been triggered
     if os.path.isfile("alerts.json"):
@@ -178,6 +181,25 @@ async def indicator(ctx, symbol, indicator, window='0', timeframe = '1h'):
         await ctx.respond(f"Indicator, \"{indicator}\", for symbol, {symbol}, is currently at:\n{val}\n- on {timeframe} timeframe.")
 
 
+# Get latest TFS from certain coin
+@bot.slash_command(guild_ids = [GUILD_ID], name = "tfs", describtion = "Get time of last TFS from symbol")
+async def tfs(ctx, symbol):
+    symbol = symbol.upper()
+    path = "tfs_log.json"
+
+    with open(path, "r") as log_file:
+        file = json.load(log_file)
+
+        # Check if a trigger is logged
+        if symbol in list(file.keys()):
+            latest_trigger = file[symbol]["Time"]
+            await ctx.respond(f"Latest trigger for {symbol} was at: {latest_trigger}")
+        else:
+            await ctx.respond(f"No triggers has been logged for {symbol} yet!!")
+        
+        log_file.close()
+
+
 # For clearing chat
 @bot.slash_command(guild_ids = [GUILD_ID], name = "clear", describtion = "Clear the previous, \"n\", bot messages")
 async def clear(ctx, amount = 10):
@@ -189,5 +211,6 @@ async def clear(ctx, amount = 10):
     else:
         await ctx.respond("Unfortunately you do not have permission to use this command :cry:")
 
+
 # Run bot
-bot.run(token)
+bot.run(TOKEN)

@@ -20,10 +20,10 @@ This will require python version >=3.8.0.
 
 **NOTE WHEN ADDING BOT TO SERVER** - Remember to give the bot permission to use commands and to be a bot when adding the bot to your server! <br>
 https://discord.com/developers/applications/your-application-id/oauth2/url-generator <br>
-And remember to add the bot token as well, in the bottom of the main file...
+And remember to add the bot token as well, in the `config.json` file...
 
 ### Running on Raspberry pi
-Some Raspberry pi devices may throw an error like, ```Importing the numpy c-extensions failed```. For this, run:
+Some Raspberry pi devices may throw an error like, `Importing the numpy c-extensions failed`. For this, run:
 ```bash
 sudo apt-get install libatlas-base-dev
 ```
@@ -31,7 +31,7 @@ This is taken from this [GitHub issue](https://github.com/numpy/numpy/issues/157
 
 ## Customizing the bot
 
-In ```config.json``` one can set the chat in which the bot should send alerts in. This includes different types of alerts: Volume breakouts and added price/volume alerts.
+In `config.json` one can set the chat in which the bot should send alerts in. This includes different types of alerts: Volume breakouts and added price/volume alerts.
 It is also in the config file that one can change the time interval in seconds that the bot scrapes the market/checks if alerts are triggered together with the required volume multiplier for a low timeframe volume breakout.
 ```json
 {
@@ -44,12 +44,14 @@ It is also in the config file that one can change the time interval in seconds t
         "guild_id": 01234567890123456789,
         "alerts_channel": 09876543210987654321,
         "volume_breakout_channel": ""
-    }
+    },
+    "pairs": []
 }
 ```
 One should also add the guild id (server id) when using the bot. This will make slash-commands available immediately after the bot is run.<br>
-**NOTE** that the ```"volume_breakout_channel"``` is left empty, or rather as "". This will disable high volume breakout scraping. If this is not desired, please insert the id of the channel you wish to receive alerts in.
+**NOTE** that the ```"volume_breakout_channel"``` is left empty, or rather as "". This will disable high volume breakout scraping. If this is not desired, please insert the id of the channel you wish to receive alerts in. <br>
 
+The same goes for the `pairs: []` list, which is left empty by defult. If any symbol pairs are added to this list, then the bot will only look for high volume breakouts on these trading pairs.
 
 ## Features
 This section will cover the available commands and how to use them. This will be updated as commands change and when commands are removed/added. <br>
@@ -142,5 +144,18 @@ Example usage:
 Which generates the following chart and sends it in the chat. <br>
 ![Chart from chart command](https://github.com/byggemandboesen/TradeFinder/blob/main/Images/chart.jpg)
 
+### Latest TradeFinder signal (/tfs)
+Find the date and time of the latest volume breakout trigger for a given trading pair
+#### Requirements
+- Symbol
 
-*More commands coming soon*
+Example usage:
+```
+/tfs symbol:btcusdt
+```
+The bot will then reply with the date and time of the latest triggered volume breakout for BTCUSDT.
+
+## TODO
+* Testing and bug-fixing
+* Code optimization and refactoring
+
