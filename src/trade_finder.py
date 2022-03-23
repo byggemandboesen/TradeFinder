@@ -30,8 +30,8 @@ class TradeFinder:
                     continue
                 else:
                     vma = self.TechnicalAnalyzer.vma(candles, 20)
-                    vol_diff = round((candles["Volume"].iloc[-2] - vma) * 100 / vma - 100, 2)
-                    temp_df = pd.DataFrame([[coin, vol_diff, open, percent_up - 100]], columns = columns)
+                    vol_diff = round((candles["Volume"].iloc[-1] - vma) * 100 / vma - 100, 2)
+                    temp_df = pd.DataFrame([[coin, vol_diff, open, percent_up]], columns = columns)
                     df = pd.concat([df, temp_df], ignore_index = True) if (float(temp_df["Percent volume increase"])> self.VOL_THREASHOLD * 100) else df
             except Exception as e:
                 print(f"Skipping coin due to exception: \"{e}\"")
