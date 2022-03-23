@@ -37,8 +37,9 @@ It is also in the config file that one can change the time interval in seconds t
 {
     "token": "token",
     "parameters": {
-        "scrape_interval": 15,
-        "vol_breakout_threashold": 5
+        "scrape_interval": 300,
+        "vol_breakout_threashold": 3,
+        "vol_breakout_timeframe": "1h"
     },
     "ids": {
         "guild_id": 01234567890123456789,
