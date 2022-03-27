@@ -49,14 +49,17 @@ class Helper():
 
                     # If symbol is not in log file, add it
                     if symbol not in list(file.keys()):
+                        # print(f"Added: {symbol}")
                         file[symbol] = {"Open price": candle_open, "Time": trigger_time}
 
                     # If TFS has already been alerted then delete from trigger dataframe
                     elif file[symbol]["Open price"] == candle_open and file[symbol]["Time"] != trigger_time:
+                        # print(f"Deleted: {symbol}")
                         triggers.drop(index, inplace=True)
                     
                     # If not, update with new signal
                     elif file[symbol]["Open price"] != candle_open:
+                        # print(f"Updated: {symbol}")
                         file[symbol] = {"Open price": candle_open, "Time": trigger_time}
                     
                 log_file.seek(0)

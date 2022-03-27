@@ -52,7 +52,7 @@ async def scrape_market():
             print("No high volume breakouts!")
         else:
             channel = bot.get_channel(vol_breakout_alerts)
-            await channel.send(f"Caught high volume breakouts!\n{tfs_triggers.to_string()}")
+            await channel.send(f":alarm_clock: Caught high volume breakouts! :alarm_clock: \n{tfs_triggers.to_string()}")
 
     # Check if any alerts have been triggered
     if os.path.isfile("alerts.json"):
