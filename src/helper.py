@@ -74,5 +74,12 @@ class Helper():
         triggers.reset_index(drop=True, inplace=True)
         return triggers
 
-        
+
+    # Remove faulty extra curly bracket from tfs_log
+    def clean_tfs_log():
+        path = "tfs_log.json"
+        with open(path, 'rb+') as log_file:
+            log_file.seek(-1, os.SEEK_END)
+            log_file.truncate()
+
     

@@ -46,8 +46,19 @@ async def scrape_market():
     # Do market scrape if channel is supplied in config.json
     vol_breakout_alerts = None if ids["volume_breakout_channel"] == "" else ids["volume_breakout_channel"]
     if vol_breakout_alerts is not None:
+        
         # Check for high volume moves to the upside
-        tfs_triggers = TradeScraper.check_vol(PAIRS)
+        # Try/except is due to weird extra curly bracket error
+        try:
+            tfs_triggers = TradeScraper.check_vol(PAIRS)
+        except Exception as e:
+            if e.__class__.__name__ == "JSONDecodeError":
+                Helper.clean_tfs_log()
+                tfs_triggers = TradeScraper.check_vol(PAIRS)
+            else:
+                print(f"Error occured: {e}")
+                tfs_triggers = None
+        
         if tfs_triggers is None:
             print("No high volume breakouts!")
         else:
@@ -67,6 +78,7 @@ async def scrape_market():
 
         # Remove alerts after being triggered
         [AlertLogger.rm_alert(alert) for alert in alerts if alert["delete"] == "true"]
+    
     print(f"{datetime.utcnow()} - Done scraping!")
 
 @scrape_market.before_loop
