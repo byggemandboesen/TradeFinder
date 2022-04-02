@@ -3,7 +3,8 @@
     "parameters": {
         "scrape_interval": 300,
         "vol_breakout_threashold": 3,
-        "vol_breakout_timeframe": "1h"
+        "vol_breakout_timeframe": "1h",
+        "rank_by_marketcap": 0
     },
     "ids": {
         "guild_id": 01234567890123456789,

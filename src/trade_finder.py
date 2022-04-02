@@ -6,7 +6,7 @@ from src.helper import Helper
 class TradeFinder:
     def __init__(self, DataStreamer, TechnicalAnalyzer, vol_threashold, vol_timeframe):
         self.DataStreamer = DataStreamer
-        self.all_coins = [coin for coin in self.DataStreamer.get_symbols() if "USDT" in coin[3:]] # ["ETHUSDT", "BTCUSDT", "BNBUSDT", "SOLUSDT", "ADAUSDT"]
+        self.all_coins = self.DataStreamer.get_symbols()
         self.TechnicalAnalyzer = TechnicalAnalyzer
         
         self.VOL_THREASHOLD = vol_threashold
@@ -15,7 +15,7 @@ class TradeFinder:
     # Scrape market for high volume breakouts
     def check_vol(self, PAIRS):
         # Empty dataframe that contains all coins with a volume greater than 3X the volume moving average
-        columns = ["Coins", "Percent volume increase", "Open price", "Percent increase",]
+        columns = ["Coins", "Volume increase", "Open price", "Percent increase",]
         df = pd.DataFrame(columns = columns)
         pairs = self.all_coins if len(PAIRS) == 0 else PAIRS
 
@@ -30,9 +30,9 @@ class TradeFinder:
                     continue
                 else:
                     vma = self.TechnicalAnalyzer.vma(candles, 20)
-                    vol_diff = round((candles["Volume"].iloc[-1] - vma) * 100 / vma - 100, 2)
-                    temp_df = pd.DataFrame([[coin, vol_diff, open, percent_up]], columns = columns)
-                    df = pd.concat([df, temp_df], ignore_index = True) if (float(temp_df["Percent volume increase"])> self.VOL_THREASHOLD * 100) else df
+                    vol_multiple = round(candles["Volume"].iloc[-1]/ vma, 2)
+                    temp_df = pd.DataFrame([[coin, f"{vol_multiple}X", open, percent_up]], columns = columns)
+                    df = pd.concat([df, temp_df], ignore_index = True) if (vol_multiple> self.VOL_THREASHOLD) else df
             except Exception as e:
                 print(f"Skipping coin due to exception: \"{e}\"")
 

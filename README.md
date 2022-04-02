@@ -39,7 +39,8 @@ It is also in the config file that one can change the time interval in seconds t
     "parameters": {
         "scrape_interval": 300,
         "vol_breakout_threashold": 3,
-        "vol_breakout_timeframe": "1h"
+        "vol_breakout_timeframe": "1h",
+        "rank_by_marketcap": 0
     },
     "ids": {
         "guild_id": 01234567890123456789,
@@ -52,7 +53,7 @@ It is also in the config file that one can change the time interval in seconds t
 One should also add the guild id (server id) when using the bot. This will make slash-commands available immediately after the bot is run.<br>
 **NOTE** that the ```"volume_breakout_channel"``` is left empty, or rather as "". This will disable high volume breakout scraping. If this is not desired, please insert the id of the channel you wish to receive alerts in. <br>
 
-The same goes for the `pairs: []` list, which is left empty by defult. If any symbol pairs are added to this list, then the bot will only look for high volume breakouts on these trading pairs.
+The same goes for the `pairs: []` list, which is left empty by defult. If any symbol pairs are added to this list, then the bot will only look for high volume breakouts on these trading pairs. The `rank_by_marketcap` option allows the user to limit the scraped coins by market cap rank between 1-1000. Leaving this at 0 will include all coins no matter market cap.
 
 ## Features
 This section will cover the available commands and how to use them. This will be updated as commands change and when commands are removed/added. <br>

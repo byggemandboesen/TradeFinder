@@ -1,9 +1,11 @@
-import ccxt
+import ccxt, json, requests, math
 import pandas as pd
+
 
 # Stream OHLCV data
 class Streamer:
-    def __init__(self):
+    def __init__(self, rank):
+        self.RANK_BY_MARKETCAP = rank
         self.exchange = ccxt.binance()
         print("Fetching available symbol pairs from exchange...")
         self.TICKERS = [ticker.replace("/","") for ticker in list(self.exchange.fetch_tickers())]
@@ -51,4 +53,24 @@ class Streamer:
     
     # Returns all the tickers on exchange
     def get_symbols(self):
-        return self.TICKERS
+        if self.RANK_BY_MARKETCAP == 0:
+            return self.TICKERS
+        elif self.RANK_BY_MARKETCAP < 1 or self.RANK_BY_MARKETCAP > 1000:
+            print("Desired rank range not within allowed range.\nPlease select a range from 1 to 1000.")
+            quit()
+        else:
+            # Fetch list of top 500 cryptos by market cap using coingecko API
+            # https://www.coingecko.com/en/api/documentation
+            final_dict = []
+            
+            # Get top 1000 cryptos by market cap
+            for i in range(1, int(math.ceil(self.RANK_BY_MARKETCAP / 250)) + 1):
+                api = f"https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page={i}&sparkline=false"
+                response = requests.get(api)
+                final_dict += json.loads(response.text)
+
+            symbols = [coin["symbol"] for coin in final_dict]
+            
+            # Filter tickers by market cap rank
+            filtered_tickers = [ticker for ticker in self.TICKERS if ticker[-4:] == "USDT" and ticker[:-4].lower() in symbols[:self.RANK_BY_MARKETCAP]]
+            return filtered_tickers

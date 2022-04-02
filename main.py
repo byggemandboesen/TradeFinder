@@ -29,7 +29,7 @@ GUILD_ID = ids["guild_id"]
 
 # Initate classes
 TechnicalAnalyzer = TA()
-DataStreamer = Streamer()
+DataStreamer = Streamer(PARAMETERS["rank_by_marketcap"])
 TradeScraper = TradeFinder(DataStreamer, TechnicalAnalyzer, PARAMETERS["vol_breakout_threashold"], PARAMETERS["vol_breakout_timeframe"])
 AlertLogger = Logger()
 
