@@ -1,12 +1,10 @@
 # Discord imports
-from tkinter import Pack
 import discord
 from discord.ext import tasks
 
 #Misc imports
 from datetime import datetime
-import json
-import os
+import json, os
 
 # File imports
 from src.indicators import TA
@@ -46,11 +44,11 @@ async def scrape_market():
     # Do market scrape if channel is supplied in config.json
     vol_breakout_alerts = None if ids["volume_breakout_channel"] == "" else ids["volume_breakout_channel"]
     if vol_breakout_alerts is not None:
-        
+        # TODO Perform the stuff in a subproces to still be able to access the bot commands
         # Check for high volume moves to the upside
         # Try/except is due to weird extra curly bracket error
         try:
-            tfs_triggers = TradeScraper.check_vol(PAIRS)
+            tfs_triggers = await TradeScraper.check_vol(PAIRS)
         except Exception as e:
             if e.__class__.__name__ == "JSONDecodeError":
                 Helper.clean_tfs_log()
@@ -152,7 +150,7 @@ async def get_alerts(ctx, symbol):
         parsed_alerts = json.dumps(alerts, indent = 4)
         await ctx.respond(f"Active alerts for {symbol}:\n ```json\n{parsed_alerts}\n```\n Copy one of the following if you wish to remove an alert:", delete_after = 30)
         for alert in alerts:
-            await ctx.send(f"`{json.dumps(alert)}`", delete_after = 60)
+            await ctx.send(f"`{json.dumps(alert)}`")
 
 
 # Chart symbol pair last 24H
@@ -162,7 +160,7 @@ async def chart(ctx, symbol):
     if not DataStreamer.check_symbol(symbol):
         await ctx.respond("That sucks.... I looked everywhere on Binance, but I can't find this symbol pair:cry:")
     else:
-        await ctx.respond(f"Drawing chart for {symbol}...", delete_after = 60)
+        await ctx.respond(f"Drawing chart for {symbol}...")
         # 5m candles over a span of 24H: 24*60/5 = 288
         candles = DataStreamer.getKlines(symbol, 288)
         chart = Charter(symbol, candles)
@@ -171,7 +169,7 @@ async def chart(ctx, symbol):
         # Send chart in given path and delete after done
         with open(chart_path, 'rb') as image:
             img = discord.File(image)
-            await ctx.send(file = img, delete_after = 60)
+            # TODO reconsider this: await ctx.send(file = img, delete_after = 60)
             image.close()
 
         os.remove(chart_path)

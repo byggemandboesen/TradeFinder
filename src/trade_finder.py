@@ -13,7 +13,7 @@ class TradeFinder:
         self.VOL_TIMEFRAME = vol_timeframe
         
     # Scrape market for high volume breakouts
-    def check_vol(self, PAIRS):
+    async def check_vol(self, PAIRS):
         # Empty dataframe that contains all coins with a volume greater than 3X the volume moving average
         columns = ["Coins", "Volume increase", "Open price", "Percent increase",]
         df = pd.DataFrame(columns = columns)
@@ -39,6 +39,8 @@ class TradeFinder:
         # Check for identical triggers:
         result = Helper.check_tfs(df)
         return None if len(result.index) == 0 else result
+
+        # TODO Check for increasing volume
         
 
     # Check if any price alerts should be triggered

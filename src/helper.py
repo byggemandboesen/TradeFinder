@@ -81,5 +81,3 @@ class Helper():
         with open(path, 'rb+') as log_file:
             log_file.seek(-1, os.SEEK_END)
             log_file.truncate()
-
-    
