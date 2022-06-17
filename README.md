@@ -14,7 +14,7 @@ pip install -r requirements.txt
 ```
 You may need to install py-cord with the following command to allow the use of slash-commands:
 ```bash
-pip install -U git+https://github.com/Pycord-Development/pycord
+python -m pip install -U git+https://github.com/Pycord-Development/pycord
 ```
 This will require python version >=3.8.0.
 
