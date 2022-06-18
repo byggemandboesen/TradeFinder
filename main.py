@@ -52,7 +52,7 @@ async def scrape_market():
         except Exception as e:
             if e.__class__.__name__ == "JSONDecodeError":
                 Helper.clean_tfs_log()
-                tfs_triggers = TradeScraper.check_vol(PAIRS)
+                tfs_triggers = await TradeScraper.check_vol(PAIRS)
             else:
                 print(f"Error occured: {e}")
                 tfs_triggers = None
