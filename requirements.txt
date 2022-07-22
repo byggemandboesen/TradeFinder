@@ -1,5 +1,4 @@
 matplotlib==3.4.2
-py-cord==1.7.3
 numpy==1.22.3
 pandas==1.4.1
 ccxt==1.77.51

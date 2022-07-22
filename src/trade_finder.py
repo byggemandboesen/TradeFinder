@@ -1,26 +1,27 @@
-import json
+import json, asyncio
 import pandas as pd
 
-from src.helper import Helper
+import src.helper as Helper
 
 class TradeFinder:
     def __init__(self, DataStreamer, TechnicalAnalyzer, vol_threashold, vol_timeframe):
         self.DataStreamer = DataStreamer
-        self.all_coins = self.DataStreamer.get_symbols()
+        self.all_coins = self.DataStreamer.getSymbols()
         self.TechnicalAnalyzer = TechnicalAnalyzer
         
         self.VOL_THREASHOLD = vol_threashold
         self.VOL_TIMEFRAME = vol_timeframe
         
     # Scrape market for high volume breakouts
-    async def check_vol(self, PAIRS):
+    async def checkVol(self, PAIRS):
         # Empty dataframe that contains all coins with a volume greater than 3X the volume moving average
-        columns = ["Coins", "Volume increase", "Open price", "Percent increase",]
+        columns = ["Coins", "Volume increase", "Percent increase",]
         df = pd.DataFrame(columns = columns)
         pairs = self.all_coins if len(PAIRS) == 0 else PAIRS
 
         for coin in pairs:
             try:
+                # TODO Still consider asyncio here
                 candles = self.DataStreamer.getKlines(coin, 21, self.VOL_TIMEFRAME)
                 open, close = float(candles["Open"].iloc[-1]), float(candles["Close"].iloc[-1])
                 
@@ -31,7 +32,7 @@ class TradeFinder:
                 else:
                     vma = self.TechnicalAnalyzer.vma(candles, 20)
                     vol_multiple = round(candles["Volume"].iloc[-1]/ vma, 2)
-                    temp_df = pd.DataFrame([[coin, f"{vol_multiple}X", open, percent_up]], columns = columns)
+                    temp_df = pd.DataFrame([[coin, f"{vol_multiple}X", percent_up]], columns = columns)
                     df = pd.concat([df, temp_df], ignore_index = True) if (vol_multiple> self.VOL_THREASHOLD) else df
             except Exception as e:
                 print(f"Skipping coin due to exception: \"{e}\"")
@@ -44,7 +45,7 @@ class TradeFinder:
         
 
     # Check if any price alerts should be triggered
-    def check_price_alerts(self, symbols):
+    def checkPriceAlerts(self, symbols):
         triggered = []
         # Open the alerts file for all symbols
         with open("alerts.json", "r") as log_file:
@@ -72,7 +73,7 @@ class TradeFinder:
     
 
     # Check for volume breakout alerts on their corresponding timeframe
-    def check_volume_alerts(self, symbols):
+    def checkVolumeAlerts(self, symbols):
         triggered = []
 
         with open("alerts.json", "r") as log_file:

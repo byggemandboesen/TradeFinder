@@ -13,7 +13,7 @@ class Charter:
     
 
     # Plot, save and return path to chart
-    def create_chart(self):
+    def createChart(self):
         
         fig = plt.figure(figsize=(16,10))
         grid = fig.add_gridspec(2,1, height_ratios = (3,1))
@@ -26,8 +26,8 @@ class Charter:
         pricesup=self.CANDLES[self.CANDLES.Close>=self.CANDLES.Open]
         pricesdown=self.CANDLES[self.CANDLES.Close<self.CANDLES.Open]
 
-        self.plt_chart(chart_ax, pricesup, pricesdown)
-        self.plt_vol(vol_ax, pricesup, pricesdown)
+        self.plotChart(chart_ax, pricesup, pricesdown)
+        self.plotVol(vol_ax, pricesup, pricesdown)
 
         chart_ax.get_shared_x_axes().join(chart_ax, vol_ax)
         chart_ax.set_xticklabels([])
@@ -38,7 +38,7 @@ class Charter:
         plt.close()
         return path
 
-    def plt_chart(self, ax, pricesup, pricesdown):
+    def plotChart(self, ax, pricesup, pricesdown):
         width=1
         width2=0.15
         ax.bar(pricesup.index,pricesup.Close-pricesup.Open,width,bottom=pricesup.Open,color='g')
@@ -54,7 +54,7 @@ class Charter:
         ax.set_ylabel("Price evaluation", fontsize = self.LABEL_SIZE)
         ax.grid(alpha = 0.25)
     
-    def plt_vol(self, ax, pricesup, pricesdown):
+    def plotVol(self, ax, pricesup, pricesdown):
         ax.bar(pricesup.index, pricesup.Volume, color='g')
         ax.bar(pricesdown.index, pricesdown.Volume, color='r')
 

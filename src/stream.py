@@ -40,19 +40,19 @@ class Streamer:
 
 
     # Check if symbol is available
-    def check_symbol(self, symbol):
+    def checkSymbol(self, symbol):
         is_symbol = True if symbol in self.TICKERS else False
         return is_symbol
     
     
     # Check if timeframe is available
-    def check_timeframe(self, timeframe):
+    def checkTimeframe(self, timeframe):
         is_timeframe = True if timeframe in self.TIMEFRAMES else False
         return is_timeframe
 
     
     # Returns all the tickers on exchange
-    def get_symbols(self):
+    def getSymbols(self):
         if self.RANK_BY_MARKETCAP == 0:
             return self.TICKERS
         elif self.RANK_BY_MARKETCAP < 1 or self.RANK_BY_MARKETCAP > 1000:

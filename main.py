@@ -12,7 +12,7 @@ from src.chart import Charter
 from src.stream import Streamer
 from src.trade_finder import TradeFinder
 from src.alert_logger import Logger
-from src.helper import Helper
+import src.helper as Helper
 
 
 #-------------------------------------- Bot initiation and loop --------------------------------------#
@@ -48,11 +48,11 @@ async def scrape_market():
         # Check for high volume moves to the upside
         # Try/except is due to weird extra curly bracket error
         try:
-            tfs_triggers = await TradeScraper.check_vol(PAIRS)
+            tfs_triggers = await TradeScraper.checkVol(PAIRS)
         except Exception as e:
             if e.__class__.__name__ == "JSONDecodeError":
                 Helper.clean_tfs_log()
-                tfs_triggers = await TradeScraper.check_vol(PAIRS)
+                tfs_triggers = await TradeScraper.checkVol(PAIRS)
             else:
                 print(f"Error occured: {e}")
                 tfs_triggers = None
@@ -66,8 +66,8 @@ async def scrape_market():
     # Check if any alerts have been triggered
     if os.path.isfile("alerts.json"):
         symbols = AlertLogger.get_symbols()
-        price_triggers = TradeScraper.check_price_alerts(symbols)
-        vol_triggers = TradeScraper.check_volume_alerts(symbols)
+        price_triggers = TradeScraper.checkPriceAlerts(symbols)
+        vol_triggers = TradeScraper.checkVolumeAlerts(symbols)
 
         # Alert users that their alert(s) has/have been triggered
         alerts = price_triggers + vol_triggers
@@ -93,7 +93,7 @@ async def set_status():
 async def price_alert(ctx, symbol, type, price, delete_when_triggered = "true"):
     symbol = symbol.upper()
     delete_when_triggered = delete_when_triggered.lower()
-    if not DataStreamer.check_symbol(symbol):
+    if not DataStreamer.checkSymbol(symbol):
         await ctx.respond("That sucks.... I looked everywhere on Binance, but I can't find this symbol pair:cry:")
     elif type not in ("up", "down", "volume"):
         await ctx.respond("Please add a valid type for this alert: up, down, volume")
@@ -111,9 +111,9 @@ async def price_alert(ctx, symbol, type, price, delete_when_triggered = "true"):
 async def volume_alert(ctx, symbol, timeframe, volume_multiple, delete_when_triggered = "true"):
     symbol = symbol.upper()
     delete_when_triggered = delete_when_triggered.lower()
-    if not DataStreamer.check_symbol(symbol):
+    if not DataStreamer.checkSymbol(symbol):
         await ctx.respond("That sucks.... I looked everywhere on Binance, but I can't find this symbol pair:cry:")
-    elif not DataStreamer.check_timeframe(timeframe):
+    elif not DataStreamer.checkTimeframe(timeframe):
         await ctx.respond("Please add a valid timeframe...")
     elif delete_when_triggered not in ("true", "false"):
         await ctx.respond("Incorrect value for \"delete_when_triggered\". Should be either true or false...")
@@ -157,14 +157,14 @@ async def get_alerts(ctx, symbol):
 @bot.slash_command(guild_ids = [GUILD_ID], name = "chart", description = "Plot a currency pair 24H back")
 async def chart(ctx, symbol):
     symbol = symbol.upper()
-    if not DataStreamer.check_symbol(symbol):
+    if not DataStreamer.checkSymbol(symbol):
         await ctx.respond("That sucks.... I looked everywhere on Binance, but I can't find this symbol pair:cry:")
     else:
         await ctx.respond(f"Drawing chart for {symbol}...")
         # 5m candles over a span of 24H: 24*60/5 = 288
         candles = DataStreamer.getKlines(symbol, 288)
         chart = Charter(symbol, candles)
-        chart_path = chart.create_chart()
+        chart_path = chart.createChart()
 
         # Send chart in given path and delete after done
         with open(chart_path, 'rb') as image:
@@ -179,9 +179,9 @@ async def chart(ctx, symbol):
 @bot.slash_command(guild_ids = [GUILD_ID], name = "indicator", description = "Get the latest value of a certain indicator on a certain timeframe")
 async def indicator(ctx, symbol, indicator, window='0', timeframe = '1h'):
     symbol = symbol.upper()
-    if not DataStreamer.check_symbol(symbol):
+    if not DataStreamer.checkSymbol(symbol):
         await ctx.respond("That sucks.... I looked everywhere on Binance, but I can't find this symbol pair:cry:")
-    elif not DataStreamer.check_timeframe(timeframe):
+    elif not DataStreamer.checkTimeframe(timeframe):
         await ctx.respond("Whooops, that looks like an incorrect timeframe:alarm_clock: Please check your command!")
     elif window == '0' and indicator != 'bms':
         await ctx.respond(f"Did you add an incorrect window for the indicator? For example rsi **14** or ema **21**.")
